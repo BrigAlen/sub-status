@@ -10,6 +10,7 @@
   --accent: #7c3aed;
   --accent-hover: #6d28d9;
   --accent-muted: #7c3aed33;
+  --grid-line: rgba(161, 161, 170, 0.055);
 }
 
 @theme inline {
@@ -26,7 +27,13 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  /* Subtle blueprint grid - low contrast, spacious */
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-onest), system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   overflow-x: clip;
@@ -51,4 +58,11 @@ samp {
 
 main {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  padding-left: max(0px, env(safe-area-inset-left));
+  padding-right: max(0px, env(safe-area-inset-right));
+}
+
+/* Login (no sticky header): clear status bar under viewport-fit=cover */
+body:not(:has(header)) main {
+  padding-top: max(1rem, calc(env(safe-area-inset-top) + 1rem));
 }

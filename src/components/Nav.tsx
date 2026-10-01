@@ -30,7 +30,7 @@ export function Nav() {
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-[#0a0a0a]/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-[#0a0a0a]/90 backdrop-blur pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div className="flex items-center justify-between gap-3">
           <span className="font-display truncate text-lg font-semibold tracking-tight">
