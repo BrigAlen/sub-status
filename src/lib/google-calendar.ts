@@ -7,6 +7,7 @@ import {
   type Subscription,
 } from "@/db/schema";
 import { decryptSecret, encryptSecret } from "@/lib/crypto";
+import { formatMoney } from "@/lib/format";
 
 const GCAL_PROVIDER = "google_calendar";
 const GCAL_LABEL = "oauth";
@@ -411,7 +412,7 @@ export async function syncPaymentReminders(): Promise<{
       const id = eventIdFor(sub.id);
       const amount =
         sub.amountCents != null
-          ? (sub.amountCents / 100).toFixed(0) + " " + sub.currency
+          ? formatMoney(sub.amountCents, sub.currency)
           : "";
       const summary = "Оплата: " + sub.name + (amount ? " (" + amount + ")" : "");
       const description =

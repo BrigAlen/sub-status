@@ -26,18 +26,33 @@
   --font-mono: var(--font-jetbrains);
 }
 
+html {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   background-color: var(--background);
-  /* Subtle blueprint grid - low contrast, spacious */
+  /* Subtle blueprint grid - low contrast, spacious; fixed can widen paint on some mobile PWAs */
   background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   background-size: 48px 48px;
-  background-attachment: fixed;
+  background-repeat: repeat;
+  background-attachment: scroll;
   color: var(--foreground);
   font-family: var(--font-onest), system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  overflow-x: clip;
   -webkit-tap-highlight-color: transparent;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 h1,
@@ -57,9 +72,12 @@ samp {
 }
 
 main {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  padding-left: max(0px, env(safe-area-inset-left));
-  padding-right: max(0px, env(safe-area-inset-right));
+  max-width: 100%;
+  min-width: 0;
+  /* safe-area as padding inside 100% width — do not use 100vw */
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
 }
 
 /* Login (no sticky header): clear status bar under viewport-fit=cover */

@@ -46,7 +46,7 @@ export default async function SubscriptionsPage() {
               key={s.id}
               className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
             >
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-3">
                   <ProviderIcon provider={s.provider} size={40} />
                   <div className="min-w-0">
@@ -70,7 +70,7 @@ export default async function SubscriptionsPage() {
                   Изменить
                 </Link>
               </div>
-              <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2 border-t border-zinc-100 pt-3 text-sm dark:border-zinc-800">
+              <div className="mt-3 flex min-w-0 flex-wrap items-baseline justify-between gap-2 border-t border-zinc-100 pt-3 text-sm dark:border-zinc-800">
                 <p className="font-medium">
                   {formatMoney(s.amountCents, s.currency)}
                 </p>

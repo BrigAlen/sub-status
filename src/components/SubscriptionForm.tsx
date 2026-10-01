@@ -103,10 +103,14 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
   }
 
   const amountDefault =
-    initial?.amountCents != null ? (initial.amountCents / 100).toString() : "";
+    initial?.amountCents != null
+      ? (Number.isInteger(initial.amountCents / 100)
+          ? String(initial.amountCents / 100)
+          : (initial.amountCents / 100).toFixed(2))
+      : "";
 
   const field =
-    "mt-1 w-full min-h-11 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-base text-zinc-100 sm:min-h-0 sm:py-2 sm:text-sm";
+    "mt-1 w-full min-w-0 min-h-11 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-base text-zinc-100 sm:min-h-0 sm:py-2 sm:text-sm";
 
   const known = CURRENCY_OPTIONS.some((o) => o.code === currency);
 
@@ -132,14 +136,14 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
           <option value="both">Лимит + оплата</option>
         </select>
       </label>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="block text-sm">
           Сумма
           <input name="amount" type="number" step="0.01" min="0" defaultValue={amountDefault} className={field} />
         </label>
         <fieldset className="block text-sm">
           <legend className="mb-0">Валюта</legend>
-          <div className="mt-1 flex flex-wrap gap-2" role="radiogroup" aria-label="Валюта">
+          <div className="mt-1 flex min-w-0 w-full flex-wrap gap-2" role="radiogroup" aria-label="Валюта">
             {CURRENCY_OPTIONS.map(({ code, label }) => {
               const selected = currency === code;
               return (
@@ -150,7 +154,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
                   aria-checked={selected}
                   onClick={() => setCurrency(code)}
                   className={
-                    "inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition sm:min-h-0 " +
+                    "inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition sm:min-h-0 " +
                     (selected
                       ? "border-violet-500 bg-violet-600/20 text-violet-200 ring-1 ring-violet-500/60"
                       : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:border-zinc-500 hover:bg-zinc-900")

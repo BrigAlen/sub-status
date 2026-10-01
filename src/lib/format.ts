@@ -48,7 +48,13 @@ export function formatDateTime(
 export function formatMoney(cents: number | null | undefined, currency = "RUB"): string {
   if (cents == null) return "\u2014";
   try {
-    return new Intl.NumberFormat("ru-RU", { style: "currency", currency, maximumFractionDigits: 0 }).format(cents / 100);
+    // Keep fractional major units (e.g. 5.99); do not round to whole currency units.
+    return new Intl.NumberFormat("ru-RU", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(cents / 100);
   } catch {
     return (cents / 100).toFixed(2) + " " + currency;
   }

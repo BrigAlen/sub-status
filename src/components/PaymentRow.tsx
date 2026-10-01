@@ -26,7 +26,7 @@ export function PaymentRow({ sub }: { sub: Subscription }) {
     <Link
       href={"/subscriptions/" + sub.id + "/edit"}
       className={
-        "flex flex-col gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 transition hover:border-zinc-300 sm:flex-row sm:items-center sm:justify-between sm:gap-3 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 " +
+        "flex min-w-0 flex-col gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 transition hover:border-zinc-300 sm:flex-row sm:items-center sm:justify-between sm:gap-3 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 " +
         (!sub.isActive ? "opacity-50" : "")
       }
     >

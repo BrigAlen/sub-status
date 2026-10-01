@@ -62,11 +62,11 @@ export default function RootLayout({
           exo2.variable +
           " " +
           jetbrainsMono.variable +
-          " min-h-screen antialiased"
+          " min-h-screen min-w-0 max-w-full overflow-x-hidden antialiased"
         }
       >
         <Nav />
-        <main className="mx-auto max-w-5xl px-3 py-4 sm:px-4 sm:py-6">{children}</main>
+        <main className="mx-auto min-w-0 w-full max-w-5xl px-3 py-4 sm:px-4 sm:py-6">{children}</main>
         <script dangerouslySetInnerHTML={{ __html: SW_REGISTER }} />
       </body>
     </html>
