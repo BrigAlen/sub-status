@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiMutate } from "@/lib/client-csrf";
+import { ProviderIcon } from "@/components/ProviderIcon";
 
 type GcalState = {
   enabled: boolean;
@@ -31,7 +32,8 @@ export function GoogleCalendarSettings() {
     void load();
     const q = new URLSearchParams(window.location.search);
     if (q.get("gcal") === "connected") setMsg("Google Calendar подключён.");
-    if (q.get("gcal") === "error") setErr("OAuth ошибка: " + (q.get("reason") || ""));
+    if (q.get("gcal") === "error")
+      setErr("OAuth ошибка: " + (q.get("reason") || ""));
   }, []);
 
   async function save(patch: Partial<GcalState>) {
@@ -66,10 +68,14 @@ export function GoogleCalendarSettings() {
         error?: string;
         data?: { ok: boolean; upserted: number; skipped: number; error?: string };
       };
-      if (!res.ok && !body.data) throw new Error(body.error || "Ошибка синхронизации");
+      if (!res.ok && !body.data)
+        throw new Error(body.error || "Ошибка синхронизации");
       const d = body.data!;
       if (!d.ok) setErr(d.error || "Синхронизация не удалась");
-      else setMsg("Синхронизация: обновлено " + d.upserted + ", пропущено " + d.skipped);
+      else
+        setMsg(
+          "Синхронизация: обновлено " + d.upserted + ", пропущено " + d.skipped
+        );
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Ошибка");
     } finally {
@@ -78,17 +84,25 @@ export function GoogleCalendarSettings() {
   }
 
   if (!gcal) {
-    return <p className="text-sm text-zinc-500">Загрузка настроек календаря…</p>;
+    return (
+      <p className="text-sm text-zinc-500">Загрузка настроек календаря…</p>
+    );
   }
 
   return (
     <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-      <h2 className="text-lg font-semibold">Напоминания в Google Calendar</h2>
-      <p className="mt-1 text-sm text-zinc-500">
-        В день оплаты (или за день до) создаётся событие-напоминание для активных
-        подписок с датой next_billing. Нужны GOOGLE_CLIENT_ID и GOOGLE_CLIENT_SECRET
-        в env на Render. Токены хранятся зашифрованно.
-      </p>
+      <div className="flex items-start gap-3">
+        <ProviderIcon provider="google" size={36} />
+        <div>
+          <h2 className="text-lg font-semibold">Google Calendar</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            OAuth-подключение. В день оплаты (или за день) создаётся событие-
+            напоминание для активных подписок с датой next_billing. Нужны{" "}
+            GOOGLE_CLIENT_ID и GOOGLE_CLIENT_SECRET в env на Render. Токены
+            хранятся зашифрованными.
+          </p>
+        </div>
+      </div>
 
       {msg ? (
         <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
@@ -156,14 +170,16 @@ export function GoogleCalendarSettings() {
           </span>
           {!gcal.oauthConfigured ? (
             <span className="text-xs text-amber-700 dark:text-amber-300">
-              Env GOOGLE_CLIENT_* не заданы
+              Env GOOGLE_CLIENT_* не задан
             </span>
           ) : (
             <a
               href="/api/google/oauth/start"
-              className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+              className="rounded-lg bg-[#4285f4] px-3 py-1.5 text-sm font-medium text-white"
             >
-              {gcal.connected ? "Переподключить Google" : "Подключить Google Calendar"}
+              {gcal.connected
+                ? "Переподключить Google"
+                : "Подключить Google Calendar"}
             </a>
           )}
           <button

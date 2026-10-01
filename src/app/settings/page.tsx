@@ -9,8 +9,9 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Настройки</h1>
         <p className="text-sm text-zinc-500">
-          Учётные данные Cursor/Claude и напоминания Google Calendar. Секреты
-          шифруются на сервере и никогда не возвращаются в открытом виде.
+          Claude — OAuth-кнопка; Cursor — сессия браузера (официального OAuth
+          нет); Google Calendar — отдельный OAuth ниже. Секреты шифруются на
+          сервере и не возвращаются в браузер.
         </p>
       </div>
       <GoogleCalendarSettings />

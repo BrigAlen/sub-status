@@ -8,6 +8,9 @@ export type SessionData = {
   authenticated: boolean;
   loginAt?: string;
   gcalOAuthState?: string;
+  /** PKCE verifier for pending Claude OAuth */
+  claudeOAuthVerifier?: string;
+  claudeOAuthState?: string;
 };
 
 function isOpenDev(): boolean {

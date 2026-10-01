@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listSubscriptions, usingMock } from "@/lib/subscriptions";
 import { formatMoney, kindLabel, providerLabel, daysUntil } from "@/lib/format";
+import { ProviderIcon } from "@/components/ProviderIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -46,18 +47,21 @@ export default async function SubscriptionsPage() {
               className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-base font-semibold">
-                    {s.name}
-                    {!s.isActive ? (
-                      <span className="ml-1 text-xs font-normal text-zinc-400">
-                        (выкл)
-                      </span>
-                    ) : null}
-                  </p>
-                  <p className="mt-0.5 text-sm text-zinc-500">
-                    {providerLabel(s.provider)} · {kindLabel(s.kind)}
-                  </p>
+                <div className="flex min-w-0 items-start gap-3">
+                  <ProviderIcon provider={s.provider} size={40} />
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-semibold">
+                      {s.name}
+                      {!s.isActive ? (
+                        <span className="ml-1 text-xs font-normal text-zinc-400">
+                          (выкл)
+                        </span>
+                      ) : null}
+                    </p>
+                    <p className="mt-0.5 text-sm text-zinc-500">
+                      {providerLabel(s.provider)} · {kindLabel(s.kind)}
+                    </p>
+                  </div>
                 </div>
                 <Link
                   href={"/subscriptions/" + s.id + "/edit"}
