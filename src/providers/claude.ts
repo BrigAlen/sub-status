@@ -138,10 +138,50 @@ export async function fetchClaudeUsage(
     let updatedTokens: ClaudeTokens | undefined;
     let res = await fetchUsage(access);
 
+    // Rate limited on usage — do not burn refresh
+    if (res.status === 429) {
+      return {
+        provider: "claude",
+        windows: [],
+        raw: null,
+        error: "Claude: слишком много запросов (429). Подожди минуту и обнови снова.",
+      };
+    }
+
     if (res.status === 401 && tokens.refreshToken) {
-      updatedTokens = await refreshClaudeAccessToken(tokens.refreshToken);
-      access = updatedTokens.accessToken;
-      res = await fetchUsage(access);
+      try {
+        updatedTokens = await refreshClaudeAccessToken(tokens.refreshToken);
+        access = updatedTokens.accessToken;
+        res = await fetchUsage(access);
+      } catch (re) {
+        const msg = re instanceof Error ? re.message : "Claude refresh failed";
+        // 429 on refresh is temporary — keep existing tokens
+        if (/\b429\b/.test(msg)) {
+          return {
+            provider: "claude",
+            windows: [],
+            raw: null,
+            error:
+              "Claude: лимит на обновление токена (429). Подожди и нажми «Обновить лимиты» снова — переподключать OAuth не нужно.",
+          };
+        }
+        return {
+          provider: "claude",
+          windows: [],
+          raw: null,
+          error: msg,
+        };
+      }
+    }
+
+    if (res.status === 429) {
+      return {
+        provider: "claude",
+        windows: [],
+        raw: null,
+        error: "Claude: слишком много запросов (429). Подожди минуту.",
+        updatedTokens,
+      };
     }
 
     if (!res.ok) {
@@ -161,7 +201,7 @@ export async function fetchClaudeUsage(
         provider: "claude",
         windows: [],
         raw: data,
-        error: "Claude: неожиданный формат ответа",
+        error: "Claude: неизвестный формат ответа",
         updatedTokens,
       };
     }
