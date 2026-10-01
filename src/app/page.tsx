@@ -9,10 +9,15 @@ import {
 } from "@/lib/subscriptions";
 import { stubClaudeUsage, stubCursorUsage } from "@/providers/stub";
 import {
+  formatBynMonthlyTotalLabel,
   formatDateTime,
   formatMonthlyTotals,
   sumActiveMonthlyByCurrency,
 } from "@/lib/format";
+import {
+  convertMonthlyTotalsToBynCents,
+  getBynFxRates,
+} from "@/lib/fx";
 
 export const dynamic = "force-dynamic";
 
@@ -126,6 +131,25 @@ export default async function DashboardPage() {
   const monthlyTotals = sumActiveMonthlyByCurrency(payments);
   const monthlyTotalsText = formatMonthlyTotals(monthlyTotals);
 
+  // BYN FX sum when there is anything to convert (skip redundant line if only BYN).
+  let bynMonthlyLabel: string | null = null;
+  const needsFx =
+    monthlyTotals.length > 0 &&
+    !(
+      monthlyTotals.length === 1 &&
+      monthlyTotals[0]!.currency.toUpperCase() === "BYN"
+    );
+  if (needsFx) {
+    const fx = await getBynFxRates();
+    const bynCents = convertMonthlyTotalsToBynCents(monthlyTotals, fx);
+    if (bynCents != null) {
+      bynMonthlyLabel = formatBynMonthlyTotalLabel(
+        bynCents,
+        fx.ok ? fx.date : null
+      );
+    }
+  }
+
   const lastSync = limitRows
     .flatMap((r) => r.snaps.map((s) => s.capturedAt))
     .filter((d): d is Date => Boolean(d))
@@ -179,11 +203,18 @@ export default async function DashboardPage() {
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-base font-semibold sm:text-lg">Оплаты</h2>
           {monthlyTotalsText ? (
-            <p className="text-sm font-medium text-zinc-200">
-              <span className="text-zinc-500">Итого: </span>
-              {monthlyTotalsText}
-              <span className="text-zinc-500"> в месяц</span>
-            </p>
+            <div className="text-right text-sm font-medium text-zinc-200">
+              <p>
+                <span className="text-zinc-500">Итого: </span>
+                {monthlyTotalsText}
+                <span className="text-zinc-500"> в месяц</span>
+              </p>
+              {bynMonthlyLabel ? (
+                <p className="mt-0.5 text-xs font-normal text-zinc-400">
+                  {bynMonthlyLabel}
+                </p>
+              ) : null}
+            </div>
           ) : null}
         </div>
         <div className="space-y-2">

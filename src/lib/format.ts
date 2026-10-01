@@ -98,7 +98,7 @@ const CURRENCY_ORDER = ["EUR", "USD", "BYN", "RUB"];
 
 /**
  * Sum active subscriptions as monthly equivalents, grouped by currency.
- * No FX conversion: separate totals per currency when rates are absent.
+ * Separate totals per currency; Overview also shows a BYN FX sum when NBRB rates are available.
  */
 export function sumActiveMonthlyByCurrency(
   subs: Array<{
@@ -134,4 +134,25 @@ export function formatMonthlyTotals(
   if (totals.length === 0) return "";
   return totals.map((t) => formatMoney(t.cents, t.currency)).join(" · ");
 }
+/** Format NBRB rate date YYYY-MM-DD as DD.MM.YYYY for UI note. */
+export function formatFxRateDate(ymd: string | null | undefined): string {
+  if (!ymd) return "";
+  const m = ymd.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return ymd;
+  return m[3] + "." + m[2] + "." + m[1];
+}
 
+/**
+ * Label for Overview BYN FX total, e.g. "\u2248 12,34 BYN \u0432 \u043c\u0435\u0441\u044f\u0446".
+ * Optional rate-date note: "\u00b7 \u043a\u0443\u0440\u0441 \u041d\u0411\u0420\u0411 DD.MM.YYYY".
+ */
+export function formatBynMonthlyTotalLabel(
+  bynCents: number,
+  rateDateYmd?: string | null
+): string {
+  const money = formatMoney(bynCents, "BYN");
+  let s = "\u2248 " + money + " \u0432 \u043c\u0435\u0441\u044f\u0446";
+  const d = formatFxRateDate(rateDateYmd);
+  if (d) s += " \u00b7 \u043a\u0443\u0440\u0441 \u041d\u0411\u0420\u0411 " + d;
+  return s;
+}
