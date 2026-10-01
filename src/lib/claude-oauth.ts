@@ -10,12 +10,11 @@ export const CLAUDE_REDIRECT_URI =
   "https://console.anthropic.com/oauth/code/callback";
 export const CLAUDE_OAUTH_SCOPES =
   "org:create_api_key user:profile user:inference";
-const CLAUDE_UA = "claude-code/2.1.72";
 
 export type ClaudePkce = {
+  /** Also used as OAuth `state` (Anthropic requires state === verifier). */
   verifier: string;
   challenge: string;
-  state: string;
 };
 
 export function generateClaudePkce(): ClaudePkce {
@@ -23,8 +22,7 @@ export function generateClaudePkce(): ClaudePkce {
   const challenge = createHash("sha256")
     .update(verifier)
     .digest("base64url");
-  const state = randomBytes(16).toString("hex");
-  return { verifier, challenge, state };
+  return { verifier, challenge };
 }
 
 export function buildClaudeAuthUrl(pkce: ClaudePkce): string {
@@ -36,7 +34,8 @@ export function buildClaudeAuthUrl(pkce: ClaudePkce): string {
   url.searchParams.set("scope", CLAUDE_OAUTH_SCOPES);
   url.searchParams.set("code_challenge", pkce.challenge);
   url.searchParams.set("code_challenge_method", "S256");
-  url.searchParams.set("state", pkce.state);
+  // Anthropic non-standard: state must equal the PKCE verifier
+  url.searchParams.set("state", pkce.verifier);
   return url.toString();
 }
 
@@ -45,17 +44,19 @@ export function parseClaudeAuthCode(raw: string): {
   code: string;
   state?: string;
 } {
-  const trimmed = raw.trim();
+  const trimmed = raw.trim().replace(/^['"]|['"]$/g, "");
   if (!trimmed) throw new Error("Вставь код авторизации");
   if (trimmed.includes("#")) {
-    const [code, state] = trimmed.split("#", 2);
+    const idx = trimmed.indexOf("#");
+    const code = trimmed.slice(0, idx).trim();
+    const state = trimmed.slice(idx + 1).trim();
     if (!code) throw new Error("Неверный формат кода");
-    return { code: code.trim(), state: state?.trim() || undefined };
+    return { code, state: state || undefined };
   }
-  const q = trimmed.match(/[?&]code=([^&]+)/i);
+  const q = trimmed.match(/[?&]code=([^&#]+)/i);
   if (q) {
     const code = decodeURIComponent(q[1]!);
-    const s = trimmed.match(/[?&]state=([^&]+)/i);
+    const s = trimmed.match(/[?&]state=([^&#]+)/i);
     return {
       code,
       state: s ? decodeURIComponent(s[1]!) : undefined,
@@ -70,27 +71,42 @@ export async function exchangeClaudeAuthCode(opts: {
   state: string;
 }): Promise<ClaudeTokens> {
   const body = {
-    grant_type: "authorization_code",
     code: opts.code,
+    state: opts.state,
+    grant_type: "authorization_code",
     client_id: CLAUDE_OAUTH_CLIENT_ID,
     redirect_uri: CLAUDE_REDIRECT_URI,
     code_verifier: opts.codeVerifier,
-    state: opts.state,
   };
   const res = await fetch(CLAUDE_TOKEN_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "User-Agent": CLAUDE_UA,
       Accept: "application/json",
     },
     body: JSON.stringify(body),
     cache: "no-store",
   });
-  if (!res.ok) {
-    throw new Error("Claude OAuth exchange HTTP " + res.status);
+  const text = await res.text();
+  let data: Record<string, unknown> = {};
+  try {
+    data = text ? (JSON.parse(text) as Record<string, unknown>) : {};
+  } catch {
+    data = { raw: text.slice(0, 300) };
   }
-  const data = (await res.json()) as Record<string, unknown>;
+  if (!res.ok) {
+    const detail =
+      typeof data.error === "string"
+        ? data.error
+        : typeof data.error_description === "string"
+          ? data.error_description
+          : typeof data.message === "string"
+            ? data.message
+            : text.slice(0, 200);
+    throw new Error(
+      "Claude OAuth exchange HTTP " + res.status + (detail ? ": " + detail : "")
+    );
+  }
   const accessToken = String(data.access_token ?? data.accessToken ?? "").trim();
   const refreshToken = String(
     data.refresh_token ?? data.refreshToken ?? ""

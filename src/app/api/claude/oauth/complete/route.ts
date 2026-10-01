@@ -29,8 +29,7 @@ export async function POST(req: Request) {
     const body = (await req.json()) as { code?: string };
     const session = await getSession();
     const verifier = session.claudeOAuthVerifier;
-    const expectedState = session.claudeOAuthState;
-    if (!verifier || !expectedState) {
+    if (!verifier) {
       return jsonError(
         "Сначала нажми «Подключить Claude», затем вставь код с страницы Anthropic",
         400
@@ -44,15 +43,28 @@ export async function POST(req: Request) {
       return jsonError(e instanceof Error ? e.message : "Неверный код", 400);
     }
 
-    if (parsed.state && parsed.state !== expectedState) {
-      return jsonError("State не совпадает — начни подключение заново", 400);
+    // Prefer state from pasted code#state; fallback to session (=== verifier)
+    const state = parsed.state || session.claudeOAuthState || verifier;
+    if (parsed.state && parsed.state !== verifier) {
+      return jsonError(
+        "State не совпадает с PKCE — начни подключение заново (кнопка «Подключить Claude»)",
+        400
+      );
     }
 
-    const tokens = await exchangeClaudeAuthCode({
-      code: parsed.code,
-      codeVerifier: verifier,
-      state: expectedState,
-    });
+    let tokens;
+    try {
+      tokens = await exchangeClaudeAuthCode({
+        code: parsed.code,
+        codeVerifier: verifier,
+        state,
+      });
+    } catch (e) {
+      return jsonError(
+        e instanceof Error ? e.message : "Ошибка обмена кода Claude",
+        400
+      );
+    }
 
     const secret = serializeClaudeTokens(tokens);
     const enc = encryptSecret(secret);
@@ -97,18 +109,26 @@ export async function POST(req: Request) {
       id = inserted[0]!.id;
     }
 
-    delete session.claudeOAuthVerifier;
-    delete session.claudeOAuthState;
-    await session.save();
+    try {
+      delete session.claudeOAuthVerifier;
+      delete session.claudeOAuthState;
+      await session.save();
+    } catch {
+      // non-fatal
+    }
 
-    await writeAudit({
-      action: "credential_store",
-      entityType: "provider_credential",
-      entityId: id,
-      ip,
-      userAgent: req.headers.get("user-agent"),
-      meta: { provider: "claude", label: "default", via: "oauth" },
-    });
+    try {
+      await writeAudit({
+        action: "credential_store",
+        entityType: "provider_credential",
+        entityId: id,
+        ip,
+        userAgent: req.headers.get("user-agent"),
+        meta: { provider: "claude", label: "default", via: "oauth" },
+      });
+    } catch {
+      // non-fatal
+    }
 
     return NextResponse.json({ data: { configured: true, id } });
   } catch (e) {

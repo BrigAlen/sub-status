@@ -13,8 +13,9 @@ export async function GET(req: Request) {
 
     const pkce = generateClaudePkce();
     const session = await getSession();
+    // state === verifier (Anthropic requirement)
     session.claudeOAuthVerifier = pkce.verifier;
-    session.claudeOAuthState = pkce.state;
+    session.claudeOAuthState = pkce.verifier;
     await session.save();
 
     return NextResponse.redirect(buildClaudeAuthUrl(pkce));

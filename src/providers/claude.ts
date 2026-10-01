@@ -102,19 +102,18 @@ async function fetchUsage(accessToken: string): Promise<Response> {
 export async function refreshClaudeAccessToken(
   refreshToken: string
 ): Promise<ClaudeTokens> {
-  const body = new URLSearchParams({
-    grant_type: "refresh_token",
-    client_id: CLAUDE_CLIENT_ID,
-    refresh_token: refreshToken,
-  });
   const res = await fetch(CLAUDE_TOKEN_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Type": "application/json",
       "User-Agent": CLAUDE_UA,
       Accept: "application/json",
     },
-    body: body.toString(),
+    body: JSON.stringify({
+      grant_type: "refresh_token",
+      client_id: CLAUDE_CLIENT_ID,
+      refresh_token: refreshToken,
+    }),
     cache: "no-store",
   });
   if (!res.ok) {
