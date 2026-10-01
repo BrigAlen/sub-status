@@ -1,0 +1,106 @@
+import type { Subscription, UsageSnapshot } from "./schema";
+
+const now = new Date();
+const inDays = (d: number) => {
+  const x = new Date(now);
+  x.setDate(x.getDate() + d);
+  return x.toISOString().slice(0, 10);
+};
+
+export const MOCK_SUBSCRIPTIONS: Subscription[] = [
+  {
+    id: "00000000-0000-4000-8000-000000000001",
+    name: "Cursor Pro",
+    provider: "cursor",
+    kind: "both",
+    amountCents: 2000,
+    currency: "USD",
+    billingPeriod: "monthly",
+    nextBillingAt: inDays(12),
+    notes: "Демо: лимиты + биллинг",
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000002",
+    name: "Claude Pro",
+    provider: "claude",
+    kind: "both",
+    amountCents: 2000,
+    currency: "USD",
+    billingPeriod: "monthly",
+    nextBillingAt: inDays(5),
+    notes: "Демо: окно использования",
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000003",
+    name: "Google One",
+    provider: "google",
+    kind: "billing_only",
+    amountCents: 29900,
+    currency: "RUB",
+    billingPeriod: "monthly",
+    nextBillingAt: inDays(18),
+    notes: null,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000004",
+    name: "Яндекс 360",
+    provider: "yandex",
+    kind: "billing_only",
+    amountCents: 39900,
+    currency: "RUB",
+    billingPeriod: "monthly",
+    nextBillingAt: inDays(22),
+    notes: null,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000005",
+    name: "Boosty",
+    provider: "boosty",
+    kind: "billing_only",
+    amountCents: 50000,
+    currency: "RUB",
+    billingPeriod: "monthly",
+    nextBillingAt: inDays(3),
+    notes: "Неактивная демо-запись",
+    isActive: false,
+    createdAt: now,
+    updatedAt: now,
+  },
+];
+
+export const MOCK_USAGE: UsageSnapshot[] = [
+  {
+    id: "10000000-0000-4000-8000-000000000001",
+    subscriptionId: "00000000-0000-4000-8000-000000000001",
+    source: "manual",
+    label: "cursor pool",
+    usedPercent: "68.00",
+    remainingText: "~32% пула",
+    resetsAt: new Date(now.getTime() + 2 * 24 * 3600 * 1000),
+    rawJson: { demo: true },
+    capturedAt: now,
+  },
+  {
+    id: "10000000-0000-4000-8000-000000000002",
+    subscriptionId: "00000000-0000-4000-8000-000000000002",
+    source: "manual",
+    label: "5h window",
+    usedPercent: "42.00",
+    remainingText: "осталось ~3ч",
+    resetsAt: new Date(now.getTime() + 5 * 3600 * 1000),
+    rawJson: { demo: true },
+    capturedAt: now,
+  },
+];
