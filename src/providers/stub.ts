@@ -19,7 +19,7 @@ export function stubCursorUsage(): ProviderUsageStub {
     usedPercent: null,
     remainingText: null,
     resetsAt: null,
-    note: "Нет данных. Сохраните cookie WorkosCursorSessionToken в Настройках и нажмите «Обновить лимиты». Cookie со временем истекает.",
+    note: "Нет данных. Сохрани cookie WorkosCursorSessionToken в Настройках и нажми «Обновить лимиты». Если сессия уже есть — нажми «Обновить лимиты» ещё раз после деплоя.",
   };
 }
 
@@ -30,6 +30,6 @@ export function stubClaudeUsage(): ProviderUsageStub {
     usedPercent: null,
     remainingText: null,
     resetsAt: null,
-    note: "Нет данных. Сохраните Claude OAuth (accessToken + refreshToken) в Настройках и нажмите «Обновить лимиты».",
+    note: "Нет данных. Подключи Claude через OAuth в Настройках и нажми «Обновить лимиты».",
   };
 }
