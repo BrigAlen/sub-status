@@ -17,10 +17,10 @@ export default async function SubscriptionsPage() {
   }
 
   return (
-    <div className="min-w-0 w-full max-w-full space-y-4">
+    <div className="min-w-0 w-full max-w-full space-y-3 sm:space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Подписки</h1>
+          <h1 className="text-xl font-bold sm:text-2xl">Подписки</h1>
           <p className="text-sm text-zinc-500">
             Ручное управление{mock ? " · демо" : ""}
           </p>
@@ -38,13 +38,13 @@ export default async function SubscriptionsPage() {
           Подписок пока нет
         </p>
       ) : null}
-      <ul className="space-y-3">
+      <ul className="space-y-2 sm:space-y-3">
         {rows.map(function (s) {
           const d = daysUntil(s.nextBillingAt);
           return (
             <li
               key={s.id}
-              className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
+              className="rounded-xl border border-zinc-200 bg-white p-3 sm:p-4 dark:border-zinc-800 dark:bg-zinc-950"
             >
               <div className="flex min-w-0 items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-3">
@@ -70,7 +70,7 @@ export default async function SubscriptionsPage() {
                   Изменить
                 </Link>
               </div>
-              <div className="mt-3 flex min-w-0 flex-wrap items-baseline justify-between gap-2 border-t border-zinc-100 pt-3 text-sm dark:border-zinc-800">
+              <div className="mt-2 flex min-w-0 flex-wrap items-baseline justify-between gap-2 border-t border-zinc-100 pt-2 text-sm sm:mt-3 sm:pt-3 dark:border-zinc-800">
                 <p className="font-medium">
                   {formatMoney(s.amountCents, s.currency)}
                 </p>

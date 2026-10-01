@@ -82,3 +82,56 @@ export function kindLabel(k: string): string {
   };
   return map[k] ?? k;
 }
+
+/** Convert billed amount to monthly cents. yearly -> /12; monthly/custom/other -> as listed. */
+export function monthlyAmountCents(
+  amountCents: number | null | undefined,
+  billingPeriod: string | null | undefined
+): number | null {
+  if (amountCents == null || !Number.isFinite(amountCents)) return null;
+  const period = (billingPeriod || "monthly").toLowerCase();
+  if (period === "yearly") return Math.round(amountCents / 12);
+  return amountCents;
+}
+
+const CURRENCY_ORDER = ["EUR", "USD", "BYN", "RUB"];
+
+/**
+ * Sum active subscriptions as monthly equivalents, grouped by currency.
+ * No FX conversion: separate totals per currency when rates are absent.
+ */
+export function sumActiveMonthlyByCurrency(
+  subs: Array<{
+    isActive: boolean;
+    amountCents: number | null;
+    currency: string;
+    billingPeriod: string;
+  }>
+): { currency: string; cents: number }[] {
+  const map = new Map<string, number>();
+  for (const sub of subs) {
+    if (!sub.isActive) continue;
+    const monthly = monthlyAmountCents(sub.amountCents, sub.billingPeriod);
+    if (monthly == null) continue;
+    const cur = (sub.currency || "BYN").toUpperCase();
+    map.set(cur, (map.get(cur) || 0) + monthly);
+  }
+  const keys = Array.from(map.keys()).sort((a, b) => {
+    const ia = CURRENCY_ORDER.indexOf(a);
+    const ib = CURRENCY_ORDER.indexOf(b);
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+  return keys.map((currency) => ({ currency, cents: map.get(currency)! }));
+}
+
+/** Join per-currency monthly totals via formatMoney (keeps up to 2 fraction digits). */
+export function formatMonthlyTotals(
+  totals: { currency: string; cents: number }[]
+): string {
+  if (totals.length === 0) return "";
+  return totals.map((t) => formatMoney(t.cents, t.currency)).join(" · ");
+}
+

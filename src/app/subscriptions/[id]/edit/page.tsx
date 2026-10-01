@@ -13,7 +13,7 @@ export default async function EditSubscriptionPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold">Редактирование</h1>
+      <h1 className="mb-3 text-xl font-bold sm:mb-4 sm:text-2xl">Редактирование</h1>
       <SubscriptionForm
         initial={{
           id: sub.id,

@@ -8,7 +8,11 @@ import {
   usingMock,
 } from "@/lib/subscriptions";
 import { stubClaudeUsage, stubCursorUsage } from "@/providers/stub";
-import { formatDateTime } from "@/lib/format";
+import {
+  formatDateTime,
+  formatMonthlyTotals,
+  sumActiveMonthlyByCurrency,
+} from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -119,16 +123,19 @@ export default async function DashboardPage() {
     return a.nextBillingAt.localeCompare(b.nextBillingAt);
   });
 
+  const monthlyTotals = sumActiveMonthlyByCurrency(payments);
+  const monthlyTotalsText = formatMonthlyTotals(monthlyTotals);
+
   const lastSync = limitRows
     .flatMap((r) => r.snaps.map((s) => s.capturedAt))
     .filter((d): d is Date => Boolean(d))
     .sort((a, b) => b.getTime() - a.getTime())[0];
 
   return (
-    <div className="min-w-0 w-full max-w-full space-y-8">
+    <div className="min-w-0 w-full max-w-full space-y-5 sm:space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Обзор</h1>
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Обзор</h1>
           <p className="text-sm text-zinc-500">
             Лимиты использования и ближайшие оплаты
             {mock ? " · демо-данные (нет DATABASE_URL)" : ""}
@@ -161,7 +168,7 @@ export default async function DashboardPage() {
       ) : null}
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Лимиты</h2>
+        <h2 className="mb-2 text-base font-semibold sm:mb-3 sm:text-lg">Лимиты</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {cardsFor("cursor")}
           {cardsFor("claude")}
@@ -169,7 +176,16 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Оплаты</h2>
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-base font-semibold sm:text-lg">Оплаты</h2>
+          {monthlyTotalsText ? (
+            <p className="text-sm font-medium text-zinc-200">
+              <span className="text-zinc-500">Итого: </span>
+              {monthlyTotalsText}
+              <span className="text-zinc-500"> в месяц</span>
+            </p>
+          ) : null}
+        </div>
         <div className="space-y-2">
           {sorted.length === 0 ? (
             <p className="text-sm text-zinc-500">Подписок пока нет.</p>

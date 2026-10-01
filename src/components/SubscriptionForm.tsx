@@ -110,12 +110,12 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
       : "";
 
   const field =
-    "mt-1 w-full min-w-0 min-h-11 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-base text-zinc-100 sm:min-h-0 sm:py-2 sm:text-sm";
+    "mt-0.5 w-full min-w-0 min-h-10 rounded-lg border border-zinc-700 bg-zinc-950 px-2.5 py-2 text-[15px] leading-snug text-zinc-100 sm:min-h-0 sm:px-3 sm:py-1.5 sm:text-sm";
 
   const known = CURRENCY_OPTIONS.some((o) => o.code === currency);
 
   return (
-    <form onSubmit={onSubmit} className="mx-auto min-w-0 w-full max-w-lg space-y-4">
+    <form onSubmit={onSubmit} className="mx-auto min-w-0 w-full max-w-lg space-y-2.5 sm:space-y-4">
       <label className="block text-sm">
         Название
         <input name="name" required defaultValue={initial?.name || ""} className={field} />
@@ -136,14 +136,14 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
           <option value="both">Лимит + оплата</option>
         </select>
       </label>
-      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
         <label className="block text-sm">
           Сумма
           <input name="amount" type="number" step="0.01" min="0" defaultValue={amountDefault} className={field} />
         </label>
         <fieldset className="block text-sm">
           <legend className="mb-0">Валюта</legend>
-          <div className="mt-1 flex min-w-0 w-full flex-wrap gap-2" role="radiogroup" aria-label="Валюта">
+          <div className="mt-0.5 flex min-w-0 w-full flex-nowrap gap-1.5" role="radiogroup" aria-label="Валюта">
             {CURRENCY_OPTIONS.map(({ code, label }) => {
               const selected = currency === code;
               return (
@@ -154,7 +154,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
                   aria-checked={selected}
                   onClick={() => setCurrency(code)}
                   className={
-                    "inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition sm:min-h-0 " +
+                    "inline-flex min-h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs font-medium transition sm:min-h-0 sm:gap-1.5 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm " +
                     (selected
                       ? "border-violet-500 bg-violet-600/20 text-violet-200 ring-1 ring-violet-500/60"
                       : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:border-zinc-500 hover:bg-zinc-900")
@@ -167,7 +167,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
             })}
           </div>
           {!known ? (
-            <p className="mt-2 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-zinc-500">
               Текущая валюта в данных: {currency} (не из списка — при сохранении будет выбранная выше)
             </p>
           ) : null}
@@ -187,13 +187,13 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
       </label>
       <label className="block text-sm">
         Заметки
-        <textarea name="notes" rows={3} defaultValue={initial?.notes || ""} className={field} />
+        <textarea name="notes" rows={2} defaultValue={initial?.notes || ""} className={field + " sm:min-h-[4.5rem]"} />
       </label>
-      <label className="flex min-h-11 items-center gap-2 text-sm">
+      <label className="flex min-h-9 items-center gap-2 text-sm sm:min-h-10">
         <input name="isActive" type="checkbox" className="size-4 accent-violet-600" defaultChecked={initial?.isActive !== false} />
         Активна
       </label>
-      <label className="flex min-h-11 items-center gap-2 text-sm">
+      <label className="flex min-h-9 items-center gap-2 text-sm sm:min-h-10">
         <input
           name="calendarRemind"
           type="checkbox"
@@ -207,7 +207,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
         <button
           type="submit"
           disabled={loading}
-          className="min-h-11 w-full rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50 sm:w-auto"
+          className="min-h-10 w-full rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50 sm:min-h-11 sm:w-auto sm:py-2.5"
         >
           {loading ? "Сохранение…" : editing ? "Сохранить" : "Добавить"}
         </button>
@@ -216,7 +216,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
             type="button"
             onClick={onDelete}
             disabled={loading}
-            className="min-h-11 w-full rounded-lg border border-red-800 px-4 py-2.5 text-sm text-red-300 sm:w-auto"
+            className="min-h-10 w-full rounded-lg border border-red-800 px-4 py-2 text-sm text-red-300 sm:min-h-11 sm:w-auto sm:py-2.5"
           >
             Удалить
           </button>

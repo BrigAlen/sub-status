@@ -26,12 +26,12 @@ export function PaymentRow({ sub }: { sub: Subscription }) {
     <Link
       href={"/subscriptions/" + sub.id + "/edit"}
       className={
-        "flex min-w-0 max-w-full flex-col gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3.5 transition hover:border-zinc-300 sm:flex-row sm:items-center sm:justify-between sm:gap-3 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 " +
+        "flex min-w-0 max-w-full flex-col gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 transition hover:border-zinc-300 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4 sm:py-3.5 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 " +
         (!sub.isActive ? "opacity-50" : "")
       }
     >
-      <div className="flex min-w-0 items-center gap-3">
-        <ProviderIcon provider={sub.provider} size={32} />
+      <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+        <ProviderIcon provider={sub.provider} size={28} />
         <div className="min-w-0">
           <p className="truncate font-medium">
             {sub.name}{" "}
