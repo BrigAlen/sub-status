@@ -26,65 +26,69 @@ export default async function SubscriptionsPage() {
         </div>
         <Link
           href="/subscriptions/new"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
         >
           Добавить
         </Link>
       </div>
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
-        <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-900">
-            <tr>
-              <th className="px-3 py-2">Название</th>
-              <th className="px-3 py-2">Провайдер</th>
-              <th className="px-3 py-2">Тип</th>
-              <th className="px-3 py-2">Сумма</th>
-              <th className="px-3 py-2">Оплата</th>
-              <th className="px-3 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(function (s) {
-              const d = daysUntil(s.nextBillingAt);
-              return (
-                <tr
-                  key={s.id}
-                  className="border-t border-zinc-100 dark:border-zinc-800"
-                >
-                  <td className="px-3 py-2 font-medium">
+      {rows.length === 0 && !error ? (
+        <p className="rounded-xl border border-zinc-200 px-4 py-8 text-center text-sm text-zinc-500 dark:border-zinc-800">
+          Подписок пока нет
+        </p>
+      ) : null}
+      <ul className="space-y-3">
+        {rows.map(function (s) {
+          const d = daysUntil(s.nextBillingAt);
+          return (
+            <li
+              key={s.id}
+              className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-base font-semibold">
                     {s.name}
                     {!s.isActive ? (
-                      <span className="ml-1 text-xs text-zinc-400">выкл</span>
-                    ) : null}
-                  </td>
-                  <td className="px-3 py-2">{providerLabel(s.provider)}</td>
-                  <td className="px-3 py-2">{kindLabel(s.kind)}</td>
-                  <td className="px-3 py-2">
-                    {formatMoney(s.amountCents, s.currency)}
-                  </td>
-                  <td className="px-3 py-2">
-                    {s.nextBillingAt || "—"}
-                    {d != null ? (
-                      <span className="ml-1 text-xs text-zinc-400">
-                        ({d} дн.)
+                      <span className="ml-1 text-xs font-normal text-zinc-400">
+                        (выкл)
                       </span>
                     ) : null}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    <Link
-                      href={"/subscriptions/" + s.id + "/edit"}
-                      className="text-sm text-blue-600 hover:underline dark:text-blue-400"
-                    >
-                      Изменить
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                  </p>
+                  <p className="mt-0.5 text-sm text-zinc-500">
+                    {providerLabel(s.provider)} · {kindLabel(s.kind)}
+                  </p>
+                </div>
+                <Link
+                  href={"/subscriptions/" + s.id + "/edit"}
+                  className="shrink-0 text-sm text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  Изменить
+                </Link>
+              </div>
+              <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2 border-t border-zinc-100 pt-3 text-sm dark:border-zinc-800">
+                <p className="font-medium">
+                  {formatMoney(s.amountCents, s.currency)}
+                </p>
+                <p className="text-zinc-500">
+                  {s.nextBillingAt ? (
+                    <>
+                      {s.nextBillingAt}
+                      {d != null ? (
+                        <span className="ml-1 text-xs text-zinc-400">
+                          ({d} дн.)
+                        </span>
+                      ) : null}
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
