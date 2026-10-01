@@ -502,7 +502,7 @@ export async function syncPaymentReminders(): Promise<{
       skipped,
       ...(errors.length ? { errors } : {}),
     };
-  } catch (e) {  } catch (e) {
+  } catch (e) {
     return {
       ok: false,
       upserted: 0,
