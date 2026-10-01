@@ -1,9 +1,48 @@
+/** Display / calendar TZ. Prefer APP_TZ (server) or NEXT_PUBLIC_APP_TZ (client). */
+export function appTimeZone(): string {
+  return (
+    process.env.NEXT_PUBLIC_APP_TZ ||
+    process.env.APP_TZ ||
+    "Europe/Moscow"
+  );
+}
+
+function ymdInTz(d: Date, timeZone: string): string {
+  // en-CA yields YYYY-MM-DD
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
 export function daysUntil(dateStr: string | null | undefined): number | null {
   if (!dateStr) return null;
-  const target = new Date(dateStr + "T00:00:00");
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.round((target.getTime() - today.getTime()) / 86400000);
+  const tz = appTimeZone();
+  const todayYmd = ymdInTz(new Date(), tz);
+  const targetYmd = dateStr.slice(0, 10);
+  const t0 = Date.parse(todayYmd + "T00:00:00Z");
+  const t1 = Date.parse(targetYmd + "T00:00:00Z");
+  return Math.round((t1 - t0) / 86400000);
+}
+
+/** Format instant in APP_TZ (default Europe/Moscow). Do not invent offsets by hand. */
+export function formatDateTime(
+  input: Date | string | number | null | undefined,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  if (input == null || input === "") return "—";
+  const d = input instanceof Date ? input : new Date(input);
+  if (Number.isNaN(d.getTime())) return "—";
+  return new Intl.DateTimeFormat("ru-RU", {
+    timeZone: appTimeZone(),
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    ...options,
+  }).format(d);
 }
 
 export function formatMoney(cents: number | null | undefined, currency = "RUB"): string {

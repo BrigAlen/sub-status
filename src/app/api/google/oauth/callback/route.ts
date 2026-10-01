@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession, requireAuth } from "@/lib/session";
 import { handleApiError, jsonError } from "@/lib/api";
-import { exchangeGoogleCode, saveGoogleTokens, setGcalSettings } from "@/lib/google-calendar";
+import { exchangeGoogleCode, resolveOAuthAppBase, saveGoogleTokens, setGcalSettings } from "@/lib/google-calendar";
 import { writeAudit } from "@/lib/audit";
 import { clientIp } from "@/lib/rate-limit";
 
@@ -20,12 +20,15 @@ export async function GET(req: Request) {
     if (!code || !state) return jsonError("Нет code/state", 400);
 
     const session = await getSession();
-    const expected = (session as { gcalOAuthState?: string }).gcalOAuthState;
+    const expected = session.gcalOAuthState;
     if (!expected || expected !== state) return jsonError("Неверный OAuth state", 400);
-    delete (session as { gcalOAuthState?: string }).gcalOAuthState;
+    const redirectBase =
+      session.gcalOAuthRedirectBase || resolveOAuthAppBase(req);
+    delete session.gcalOAuthState;
+    delete session.gcalOAuthRedirectBase;
     await session.save();
 
-    const tokens = await exchangeGoogleCode(code);
+    const tokens = await exchangeGoogleCode(code, redirectBase);
     await saveGoogleTokens(tokens);
     await setGcalSettings({ enabled: true });
 

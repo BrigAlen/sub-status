@@ -19,6 +19,12 @@ services:
         sync: false
       - key: NEXT_PUBLIC_APP_URL
         sync: false
+      - key: APP_URL
+        sync: false
+      - key: APP_TZ
+        value: Europe/Moscow
+      - key: NEXT_PUBLIC_APP_TZ
+        value: Europe/Moscow
       - key: VAPID_PUBLIC_KEY
         sync: false
       - key: VAPID_PRIVATE_KEY

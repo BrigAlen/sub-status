@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateTime } from "@/lib/format";
+
 import { useEffect, useState } from "react";
 import { apiMutate } from "@/lib/client-csrf";
 import { ProviderIcon } from "@/components/ProviderIcon";
@@ -58,7 +60,14 @@ export function CredentialsForms() {
   function updatedAt(p: string) {
     const c = creds.find((x) => x.provider === p);
     if (!c?.updatedAt) return null;
-    return new Date(c.updatedAt).toLocaleString("ru-RU");
+    return formatDateTime(c.updatedAt, {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
   }
 
   async function completeClaudeOAuth(e: React.FormEvent) {

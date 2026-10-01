@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/session";
 import { getSession } from "@/lib/session";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { handleApiError, jsonError } from "@/lib/api";
-import { getGoogleAuthUrl, googleOAuthConfigured } from "@/lib/google-calendar";
+import { getGoogleAuthUrl, googleOAuthConfigured, resolveOAuthAppBase } from "@/lib/google-calendar";
 import { randomBytes } from "crypto";
 
 export async function GET(req: Request) {
@@ -19,10 +19,12 @@ export async function GET(req: Request) {
       );
     }
     const state = randomBytes(16).toString("hex");
+    const base = resolveOAuthAppBase(req);
     const session = await getSession();
-    (session as { gcalOAuthState?: string }).gcalOAuthState = state;
+    session.gcalOAuthState = state;
+    session.gcalOAuthRedirectBase = base;
     await session.save();
-    const url = getGoogleAuthUrl(state);
+    const url = getGoogleAuthUrl(state, base);
     return NextResponse.redirect(url);
   } catch (e) {
     return handleApiError(e);

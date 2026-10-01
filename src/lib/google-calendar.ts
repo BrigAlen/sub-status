@@ -85,10 +85,41 @@ export function googleOAuthConfigured(): boolean {
   return oauthConfigured();
 }
 
-export function getGoogleAuthUrl(state: string): string {
+/** Strip trailing slash from app base URL used for OAuth redirect_uri. */
+export function normalizeOAuthBaseUrl(base: string): string {
+  return base.replace(/\/$/, "");
+}
+
+/**
+ * Resolve OAuth redirect base at runtime (not build-time NEXT_PUBLIC alone).
+ * Prefer APP_URL (server-only), then NEXT_PUBLIC_APP_URL, then request origin.
+ * Render: set APP_URL=https://sub-status.onrender.com (same as public URL).
+ */
+export function resolveOAuthAppBase(req?: Request): string {
+  const fromEnv = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "").trim();
+  if (fromEnv) return normalizeOAuthBaseUrl(fromEnv);
+  if (req) {
+    const proto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const host =
+      req.headers.get("x-forwarded-host")?.split(",")[0]?.trim() ||
+      req.headers.get("host");
+    if (proto && host) return normalizeOAuthBaseUrl(proto + "://" + host);
+    try {
+      return normalizeOAuthBaseUrl(new URL(req.url).origin);
+    } catch {
+      /* ignore */
+    }
+  }
+  return "http://localhost:3000";
+}
+
+function oauthRedirectUri(baseUrl: string): string {
+  return normalizeOAuthBaseUrl(baseUrl) + "/api/google/oauth/callback";
+}
+
+export function getGoogleAuthUrl(state: string, baseUrl: string): string {
   if (!oauthConfigured()) throw new Error("GOOGLE_CLIENT_ID/SECRET не заданы");
-  const redirect = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "") +
-    "/api/google/oauth/callback";
+  const redirect = oauthRedirectUri(baseUrl);
   const params = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID!,
     redirect_uri: redirect,
@@ -101,9 +132,8 @@ export function getGoogleAuthUrl(state: string): string {
   return "https://accounts.google.com/o/oauth2/v2/auth?" + params.toString();
 }
 
-export async function exchangeGoogleCode(code: string): Promise<GoogleTokens> {
-  const redirect = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "") +
-    "/api/google/oauth/callback";
+export async function exchangeGoogleCode(code: string, baseUrl: string): Promise<GoogleTokens> {
+  const redirect = oauthRedirectUri(baseUrl);
   const res = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },

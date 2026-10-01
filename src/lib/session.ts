@@ -8,6 +8,8 @@ export type SessionData = {
   authenticated: boolean;
   loginAt?: string;
   gcalOAuthState?: string;
+  /** Base URL used for Google OAuth redirect_uri (must match at exchange). */
+  gcalOAuthRedirectBase?: string;
   /** PKCE verifier for pending Claude OAuth */
   claudeOAuthVerifier?: string;
   claudeOAuthState?: string;

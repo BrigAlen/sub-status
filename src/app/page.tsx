@@ -8,6 +8,7 @@ import {
   usingMock,
 } from "@/lib/subscriptions";
 import { stubClaudeUsage, stubCursorUsage } from "@/providers/stub";
+import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -131,15 +132,7 @@ export default async function DashboardPage() {
           <p className="text-sm text-zinc-500">
             Лимиты использования и ближайшие оплаты
             {mock ? " · демо-данные (нет DATABASE_URL)" : ""}
-            {lastSync
-              ? " · синхр. " +
-                lastSync.toLocaleString("ru-RU", {
-                  day: "2-digit",
-                  month: "short",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : ""}
+            {lastSync ? " · синхр. " + formatDateTime(lastSync) : ""}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

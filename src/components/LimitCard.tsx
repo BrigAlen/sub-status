@@ -1,4 +1,4 @@
-import { providerLabel } from "@/lib/format";
+import { formatDateTime, providerLabel } from "@/lib/format";
 import { ProviderIcon } from "@/components/ProviderIcon";
 
 type Props = {
@@ -55,25 +55,13 @@ export function LimitCard({
         <span>{remainingText || "нет данных"}</span>
         <span>
           сброс:{" "}
-          {resetsAt
-            ? new Date(resetsAt).toLocaleString("ru-RU", {
-                day: "2-digit",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "—"}
+          {resetsAt ? formatDateTime(resetsAt) : "—"}
         </span>
       </div>
       {capturedAt ? (
         <p className="mt-2 text-xs text-zinc-400">
           синхр.:{" "}
-          {new Date(capturedAt).toLocaleString("ru-RU", {
-            day: "2-digit",
-            month: "short",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          {formatDateTime(capturedAt)}
         </p>
       ) : null}
       {errorNote ? (

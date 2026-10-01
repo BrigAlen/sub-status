@@ -46,7 +46,9 @@ npm run dev
 | `AUTH_SECRET` | ≥32 символов, шифрование cookie-сессии |
 | `APP_PASSWORD` | Пароль входа (в prod обязателен) |
 | `ENCRYPTION_KEY` | 64 hex-символа (32 байта) для AES-GCM |
-| `NEXT_PUBLIC_APP_URL` | Публичный URL |
+| `NEXT_PUBLIC_APP_URL` | Публичный URL (build-time для клиента) |
+| `APP_URL` | Server runtime URL (предпочтительно для Google OAuth `redirect_uri`; на Render = публичный URL) |
+| `APP_TZ` / `NEXT_PUBLIC_APP_TZ` | Часовой пояс отображения дат (по умолчанию `Europe/Moscow`) |
 | `VAPID_*` | Web Push (`npx web-push generate-vapid-keys`) |
 | `ALLOW_MOCK_DATA` | `true` — демо без БД (только non-production) |
 
@@ -90,7 +92,7 @@ npm run db:seed
 2. Build: `npm install && npm run build`, Start: `npm start`
 3. Задайте env из `.env.example` (см. также `render.yaml` stub).
 4. На Neon выполните миграцию + seed.
-5. `NEXT_PUBLIC_APP_URL` = URL сервиса Render (https).
+5. `NEXT_PUBLIC_APP_URL` и `APP_URL` = URL сервиса Render (https), например `https://sub-status.onrender.com`. `APP_URL` нужен для Google OAuth на runtime (NEXT_PUBLIC_* вшивается на build). После смены URL — Clear build cache и redeploy.
 
 **Не коммитьте** `.env.local` и секреты.
 
