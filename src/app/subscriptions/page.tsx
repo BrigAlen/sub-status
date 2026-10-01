@@ -18,7 +18,7 @@ export default async function SubscriptionsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-end justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Подписки</h1>
           <p className="text-sm text-zinc-500">
@@ -27,7 +27,7 @@ export default async function SubscriptionsPage() {
         </div>
         <Link
           href="/subscriptions/new"
-          className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white sm:w-auto dark:bg-zinc-100 dark:text-zinc-900"
         >
           Добавить
         </Link>

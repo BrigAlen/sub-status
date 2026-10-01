@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 const PUBLIC = [
   "/login",
   "/api/auth/login",
+  "/api/cron",
   "/manifest.webmanifest",
   "/sw.js",
   "/icons",

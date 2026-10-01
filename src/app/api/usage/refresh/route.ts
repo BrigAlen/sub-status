@@ -17,6 +17,7 @@ import {
 } from "@/providers/claude";
 import { fetchCursorUsage, parseCursorSecret } from "@/providers/cursor";
 import { syncPaymentReminders } from "@/lib/google-calendar";
+import { sendTomorrowPaymentPushes } from "@/lib/web-push";
 
 type ProviderReport = {
   provider: "cursor" | "claude";
@@ -235,6 +236,12 @@ export async function POST(req: Request) {
     let calendar = null;
     try {
       calendar = await syncPaymentReminders();
+      // Best-effort push for tomorrow payments (deduped daily)
+      try {
+        await sendTomorrowPaymentPushes();
+      } catch {
+        /* ignore push errors on refresh */
+      }
     } catch {
       calendar = { ok: false, upserted: 0, skipped: 0, error: "GCal sync failed" };
     }

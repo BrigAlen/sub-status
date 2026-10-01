@@ -11,7 +11,7 @@
 - Дашборд: секции «Лимиты» и «Оплаты» (UI на русском)
 - CRUD подписок (`/subscriptions`, REST `/api/subscriptions`)
 - Заглушки usage для Cursor / Claude (+ таблица `usage_snapshots`)
-- PWA: manifest, иконки, service worker stub (Web Push позже)
+- PWA: manifest, icons, service worker (installable); Web Push «завтра оплата» — docs/PUSH.md
 - Безопасность:
   - сессия iron-session (HttpOnly, Secure в prod, SameSite=lax)
   - CSRF double-submit на мутациях (`x-csrf-token`)
@@ -49,7 +49,8 @@ npm run dev
 | `NEXT_PUBLIC_APP_URL` | Публичный URL (build-time для клиента) |
 | `APP_URL` | Server runtime URL (предпочтительно для Google OAuth `redirect_uri`; на Render = публичный URL) |
 | `APP_TZ` / `NEXT_PUBLIC_APP_TZ` | Часовой пояс отображения дат (по умолчанию `Europe/Moscow`) |
-| `VAPID_*` | Web Push (`npx web-push generate-vapid-keys`) |
+| `VAPID_*` | Web Push (`npx web-push generate-vapid-keys`), см. docs/PUSH.md |
+| `CRON_SECRET` | Bearer для `/api/cron/*` (календарь + push) |
 | `ALLOW_MOCK_DATA` | `true` — демо без БД (только non-production) |
 
 В production **обязательны** `APP_PASSWORD`, `AUTH_SECRET`, `ENCRYPTION_KEY`, `DATABASE_URL`.

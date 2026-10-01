@@ -9,3 +9,5 @@
 7. `remindOn`: `day_of` (default) or `day_before`.
 
 Apply migration: `db/migrations/0001_calendar.sql`
+
+Cron `/api/cron/calendar-reminders` also sends Web Push «завтра оплата» when VAPID is configured (see docs/PUSH.md).

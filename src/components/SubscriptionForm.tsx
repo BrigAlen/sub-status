@@ -103,7 +103,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
     initial?.amountCents != null ? (initial.amountCents / 100).toString() : "";
 
   const field =
-    "mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950";
+    "mt-1 w-full min-h-11 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base sm:min-h-0 sm:py-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950";
 
   return (
     <form onSubmit={onSubmit} className="mx-auto max-w-lg space-y-4">
@@ -127,7 +127,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
           <option value="both">Лимит + оплата</option>
         </select>
       </label>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="block text-sm">
           Сумма
           <input name="amount" type="number" step="0.01" min="0" defaultValue={amountDefault} className={field} />
@@ -171,24 +171,25 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
         Заметки
         <textarea name="notes" rows={3} defaultValue={initial?.notes || ""} className={field} />
       </label>
-      <label className="flex items-center gap-2 text-sm">
-        <input name="isActive" type="checkbox" defaultChecked={initial?.isActive !== false} />
+      <label className="flex min-h-11 items-center gap-2 text-sm">
+        <input name="isActive" type="checkbox" className="size-4" defaultChecked={initial?.isActive !== false} />
         Активна
       </label>
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex min-h-11 items-center gap-2 text-sm">
         <input
           name="calendarRemind"
           type="checkbox"
+          className="size-4"
           defaultChecked={initial?.calendarRemind !== false}
         />
         Напоминание в Google Calendar
       </label>
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      <div className="flex gap-2">
+      <div className="flex flex-col-reverse gap-2 sm:flex-row">
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+          className="min-h-11 w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50 sm:w-auto dark:bg-zinc-100 dark:text-zinc-900"
         >
           {loading ? "Сохранение…" : editing ? "Сохранить" : "Добавить"}
         </button>
@@ -197,7 +198,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
             type="button"
             onClick={onDelete}
             disabled={loading}
-            className="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:text-red-300"
+            className="min-h-11 w-full rounded-lg border border-red-300 px-4 py-2.5 text-sm text-red-700 sm:w-auto dark:border-red-800 dark:text-red-300"
           >
             Удалить
           </button>

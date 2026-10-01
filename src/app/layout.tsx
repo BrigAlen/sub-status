@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Sub Status",
   },
   icons: {
@@ -32,6 +32,7 @@ export const viewport: Viewport = {
   themeColor: "#18181b",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 const SW_REGISTER =
@@ -52,7 +53,7 @@ export default function RootLayout({
         }
       >
         <Nav />
-        <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+        <main className="mx-auto max-w-5xl px-3 py-4 sm:px-4 sm:py-6">{children}</main>
         <script dangerouslySetInnerHTML={{ __html: SW_REGISTER }} />
       </body>
     </html>

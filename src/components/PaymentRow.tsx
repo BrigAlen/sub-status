@@ -26,14 +26,14 @@ export function PaymentRow({ sub }: { sub: Subscription }) {
     <Link
       href={"/subscriptions/" + sub.id + "/edit"}
       className={
-        "flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 " +
+        "flex flex-col gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 transition hover:border-zinc-300 sm:flex-row sm:items-center sm:justify-between sm:gap-3 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 " +
         (!sub.isActive ? "opacity-50" : "")
       }
     >
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex min-w-0 items-center gap-3">
         <ProviderIcon provider={sub.provider} size={32} />
         <div className="min-w-0">
-          <p className="font-medium truncate">
+          <p className="truncate font-medium">
             {sub.name}{" "}
             <span className="text-xs font-normal text-zinc-500">
               ({providerLabel(sub.provider)})
@@ -45,11 +45,11 @@ export function PaymentRow({ sub }: { sub: Subscription }) {
           </p>
         </div>
       </div>
-      <div className="text-right shrink-0">
+      <div className="flex shrink-0 items-center justify-between gap-2 sm:flex-col sm:items-end sm:text-right">
         <span className={"inline-block rounded-full px-2.5 py-1 text-xs font-medium " + badge}>
           {daysText}
         </span>
-        <p className="mt-1 text-xs text-zinc-400">{sub.nextBillingAt || "—"}</p>
+        <p className="text-xs text-zinc-400">{sub.nextBillingAt || "—"}</p>
       </div>
     </Link>
   );

@@ -29,19 +29,19 @@ export function LimitCard({
     pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-amber-500" : "bg-emerald-500";
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="min-w-0 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-3 flex items-start justify-between gap-2">
-        <div className="flex items-start gap-3">
+        <div className="flex min-w-0 items-start gap-3">
           <ProviderIcon provider={provider} size={36} />
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
               {providerLabel(provider)}
             </p>
-            <h3 className="text-lg font-semibold">{name}</h3>
+            <h3 className="truncate text-lg font-semibold">{name}</h3>
             <p className="text-sm text-zinc-500">{label}</p>
           </div>
         </div>
-        <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-sm font-semibold tabular-nums dark:bg-zinc-800">
+        <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-1 text-sm font-semibold tabular-nums dark:bg-zinc-800">
           {usedPercent != null ? pct.toFixed(0) + "%" : "—"}
         </span>
       </div>
@@ -51,7 +51,7 @@ export function LimitCard({
           style={{ width: usedPercent != null ? Math.min(100, pct) + "%" : "0%" }}
         />
       </div>
-      <div className="flex justify-between text-xs text-zinc-500">
+      <div className="flex flex-col gap-0.5 text-xs text-zinc-500 sm:flex-row sm:justify-between">
         <span>{remainingText || "нет данных"}</span>
         <span>
           сброс:{" "}

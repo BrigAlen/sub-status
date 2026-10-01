@@ -135,18 +135,18 @@ export default async function DashboardPage() {
             {lastSync ? " · синхр. " + formatDateTime(lastSync) : ""}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           <RefreshUsageButton />
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-zinc-300 px-4 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 sm:w-auto dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
           >
             <GearIcon />
             Настройки
           </Link>
           <Link
             href="/subscriptions/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white sm:w-auto dark:bg-zinc-100 dark:text-zinc-900"
           >
             <PlusIcon />
             Добавить подписку
@@ -162,7 +162,7 @@ export default async function DashboardPage() {
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">Лимиты</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {cardsFor("cursor")}
           {cardsFor("claude")}
         </div>

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { syncPaymentReminders } from "@/lib/google-calendar";
 import { sendTomorrowPaymentPushes } from "@/lib/web-push";
 import { writeAudit } from "@/lib/audit";
 import { jsonError } from "@/lib/api";
@@ -7,10 +6,8 @@ import { jsonError } from "@/lib/api";
 export const runtime = "nodejs";
 
 /**
- * Cron-friendly endpoint. Authorize with header:
- *   Authorization: Bearer $CRON_SECRET
- * Schedule daily on Render Cron Jobs.
- * Also sends Web Push «завтра оплата» (same secret).
+ * Daily cron: Web Push «завтра оплата».
+ * Authorization: Bearer $CRON_SECRET
  */
 export async function POST(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -18,18 +15,13 @@ export async function POST(req: Request) {
   const auth = req.headers.get("authorization") || "";
   if (auth !== "Bearer " + secret) return jsonError("Unauthorized", 401);
 
-  const calendar = await syncPaymentReminders();
-  const push = await sendTomorrowPaymentPushes();
+  const force = new URL(req.url).searchParams.get("force") === "1";
+  const result = await sendTomorrowPaymentPushes({ force });
   await writeAudit({
-    action: "gcal_cron_sync",
-    meta: {
-      ok: calendar.ok,
-      upserted: calendar.upserted,
-      skipped: calendar.skipped,
-      push,
-    },
+    action: "push_cron_reminders",
+    meta: result,
   });
-  return NextResponse.json({ data: { calendar, push } });
+  return NextResponse.json({ data: result });
 }
 
 export async function GET(req: Request) {

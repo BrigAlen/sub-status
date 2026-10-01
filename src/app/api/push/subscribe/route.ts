@@ -8,6 +8,11 @@ import { getDb } from "@/db";
 import { pushSubscriptions } from "@/db/schema";
 import { writeAudit } from "@/lib/audit";
 import { handleApiError, jsonError } from "@/lib/api";
+import { z } from "zod";
+
+const unsubscribeSchema = z.object({
+  endpoint: z.string().url().max(2000),
+});
 
 export async function POST(req: Request) {
   try {
@@ -58,6 +63,33 @@ export async function POST(req: Request) {
       userAgent: req.headers.get("user-agent"),
     });
 
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return handleApiError(e);
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    await requireAuth();
+    await assertCsrf(req);
+    const ip = clientIp(req);
+    const rl = rateLimit("mutate:" + ip, 20, 60_000);
+    if (!rl.ok) return jsonError("Rate limit", 429);
+
+    const parsed = unsubscribeSchema.parse(await req.json());
+    const db = getDb();
+    if (db) {
+      await db
+        .delete(pushSubscriptions)
+        .where(eq(pushSubscriptions.endpoint, parsed.endpoint));
+    }
+    await writeAudit({
+      action: "push_unsubscribe",
+      entityType: "push_subscription",
+      ip,
+      userAgent: req.headers.get("user-agent"),
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
     return handleApiError(e);
