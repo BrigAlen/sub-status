@@ -17,7 +17,7 @@ export default async function SubscriptionsPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 w-full max-w-full space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Подписки</h1>

@@ -74,10 +74,29 @@ samp {
 main {
   max-width: 100%;
   min-width: 0;
-  /* safe-area as padding inside 100% width - do not use 100vw */
-  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-  padding-left: max(0px, env(safe-area-inset-left, 0px));
-  padding-right: max(0px, env(safe-area-inset-right, 0px));
+  /* Gutters + safe-area; do not use 100vw (avoids 1px overflow on mobile) */
+  padding-top: 1.25rem;
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 640px) {
+  main {
+    padding-top: 1.5rem;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+  }
+}
+
+@media (min-width: 768px) {
+  main {
+    padding-top: 2rem;
+    padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px));
+    padding-left: max(2rem, env(safe-area-inset-left, 0px));
+    padding-right: max(2rem, env(safe-area-inset-right, 0px));
+  }
 }
 
 /* Login (no sticky header): clear status bar under viewport-fit=cover */

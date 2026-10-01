@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 w-full max-w-full space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Настройки</h1>
         <p className="text-sm text-zinc-500">

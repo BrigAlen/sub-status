@@ -115,7 +115,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
   const known = CURRENCY_OPTIONS.some((o) => o.code === currency);
 
   return (
-    <form onSubmit={onSubmit} className="mx-auto max-w-lg space-y-4">
+    <form onSubmit={onSubmit} className="mx-auto min-w-0 w-full max-w-lg space-y-4">
       <label className="block text-sm">
         Название
         <input name="name" required defaultValue={initial?.name || ""} className={field} />

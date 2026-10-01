@@ -125,7 +125,7 @@ export default async function DashboardPage() {
     .sort((a, b) => b.getTime() - a.getTime())[0];
 
   return (
-    <div className="min-w-0 space-y-8">
+    <div className="min-w-0 w-full max-w-full space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Обзор</h1>

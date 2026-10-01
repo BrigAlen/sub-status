@@ -31,7 +31,7 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-40 w-full max-w-full min-w-0 overflow-x-hidden border-b border-zinc-800/80 bg-[#0a0a0a]/90 backdrop-blur pt-[env(safe-area-inset-top,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)]">
-      <div className="mx-auto flex min-w-0 w-full max-w-5xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="mx-auto flex min-w-0 w-full max-w-5xl flex-col gap-3 px-4 py-3 sm:px-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 md:px-8">
         <div className="flex items-center justify-between gap-3">
           <span className="font-display truncate text-lg font-semibold tracking-tight">
             Статус подписок

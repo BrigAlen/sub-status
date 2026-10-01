@@ -66,7 +66,7 @@ export default function RootLayout({
         }
       >
         <Nav />
-        <main className="mx-auto min-w-0 w-full max-w-5xl px-3 py-4 sm:px-4 sm:py-6">{children}</main>
+        <main className="mx-auto min-w-0 w-full max-w-5xl">{children}</main>
         <script dangerouslySetInnerHTML={{ __html: SW_REGISTER }} />
       </body>
     </html>
