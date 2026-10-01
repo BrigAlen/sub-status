@@ -174,7 +174,7 @@ export function GoogleCalendarSettings() {
             </span>
           ) : (
             <a
-              href="/api/google/oauth/start"
+              href="/api/google/oauth/start" target="_blank" rel="noopener noreferrer"
               className="rounded-lg bg-[#4285f4] px-3 py-1.5 text-sm font-medium text-white"
             >
               {gcal.connected

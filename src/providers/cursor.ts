@@ -73,10 +73,6 @@ export function parseCursorSecret(plaintext: string): CursorSecret {
   return { sessionToken };
 }
 
-function cookieHeader(token: string): string {
-  return "WorkosCursorSessionToken=" + encodeURIComponent(token).replace(/%3A/gi, ":").replace(/%2F/gi, "/");
-}
-
 /** Safer cookie header: if token has ::, send raw; if still encoded, send as-is. */
 function buildCookieHeader(token: string): string {
   // Browsers store the cookie value; send exactly what DevTools shows when possible.

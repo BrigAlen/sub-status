@@ -186,7 +186,7 @@ export function CredentialsForms() {
 
         <div className="space-y-3">
           <a
-            href="/api/claude/oauth/start"
+            href="/api/claude/oauth/start" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center justify-center rounded-lg bg-[#D97757] px-4 py-2.5 text-sm font-medium text-white hover:opacity-95"
           >
             {hasProvider("claude")
