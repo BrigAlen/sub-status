@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { apiMutate } from "@/lib/client-csrf";
+import { CURRENCY_OPTIONS, CurrencyIcon } from "@/components/CurrencyIcon";
 
 type Initial = {
   id?: string;
@@ -29,17 +30,18 @@ const providers = [
   ["other", "Другое"],
 ] as const;
 
-const currencies = [
-  ["BYN", "🇧🇾 BYN"],
-  ["EUR", "🇪🇺 EUR"],
-  ["USD", "🇺🇸 USD"],
-] as const;
+function resolveCurrency(initial?: Initial): string {
+  const c = (initial?.currency || "BYN").toUpperCase();
+  if (["BYN", "EUR", "USD"].includes(c)) return c;
+  return c || "BYN";
+}
 
 export function SubscriptionForm({ initial }: { initial?: Initial }) {
   const router = useRouter();
   const editing = Boolean(initial?.id);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currency, setCurrency] = useState(resolveCurrency(initial));
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -57,7 +59,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
       provider: String(fd.get("provider") || "other"),
       kind: String(fd.get("kind") || "billing_only"),
       amountCents: Number.isFinite(amountCents as number) ? amountCents : null,
-      currency: String(fd.get("currency") || "BYN"),
+      currency,
       billingPeriod: String(fd.get("billingPeriod") || "monthly"),
       nextBillingAt: String(fd.get("nextBillingAt") || "") || null,
       notes: String(fd.get("notes") || "") || null,
@@ -104,7 +106,9 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
     initial?.amountCents != null ? (initial.amountCents / 100).toString() : "";
 
   const field =
-    "mt-1 w-full min-h-11 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base sm:min-h-0 sm:py-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950";
+    "mt-1 w-full min-h-11 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-base text-zinc-100 sm:min-h-0 sm:py-2 sm:text-sm";
+
+  const known = CURRENCY_OPTIONS.some((o) => o.code === currency);
 
   return (
     <form onSubmit={onSubmit} className="mx-auto max-w-lg space-y-4">
@@ -133,28 +137,37 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
           Сумма
           <input name="amount" type="number" step="0.01" min="0" defaultValue={amountDefault} className={field} />
         </label>
-        <label className="block text-sm">
-          Валюта
-          <select
-            name="currency"
-            defaultValue={
-              ["BYN", "EUR", "USD"].includes(initial?.currency || "")
-                ? initial!.currency!
-                : initial?.currency
-                  ? initial.currency
-                  : "BYN"
-            }
-            className={field}
-          >
-            {currencies.map(([v, l]) => (
-              <option key={v} value={v}>{l}</option>
-            ))}
-            {initial?.currency &&
-            !["BYN", "EUR", "USD"].includes(initial.currency) ? (
-              <option value={initial.currency}>{initial.currency}</option>
-            ) : null}
-          </select>
-        </label>
+        <fieldset className="block text-sm">
+          <legend className="mb-0">Валюта</legend>
+          <div className="mt-1 flex flex-wrap gap-2" role="radiogroup" aria-label="Валюта">
+            {CURRENCY_OPTIONS.map(({ code, label }) => {
+              const selected = currency === code;
+              return (
+                <button
+                  key={code}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setCurrency(code)}
+                  className={
+                    "inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition sm:min-h-0 " +
+                    (selected
+                      ? "border-violet-500 bg-violet-600/20 text-violet-200 ring-1 ring-violet-500/60"
+                      : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:border-zinc-500 hover:bg-zinc-900")
+                  }
+                >
+                  <CurrencyIcon code={code} className="size-4" />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+          {!known ? (
+            <p className="mt-2 text-xs text-zinc-500">
+              Текущая валюта в данных: {currency} (не из списка — при сохранении будет выбранная выше)
+            </p>
+          ) : null}
+        </fieldset>
       </div>
       <label className="block text-sm">
         Период
@@ -173,24 +186,24 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
         <textarea name="notes" rows={3} defaultValue={initial?.notes || ""} className={field} />
       </label>
       <label className="flex min-h-11 items-center gap-2 text-sm">
-        <input name="isActive" type="checkbox" className="size-4" defaultChecked={initial?.isActive !== false} />
+        <input name="isActive" type="checkbox" className="size-4 accent-violet-600" defaultChecked={initial?.isActive !== false} />
         Активна
       </label>
       <label className="flex min-h-11 items-center gap-2 text-sm">
         <input
           name="calendarRemind"
           type="checkbox"
-          className="size-4"
+          className="size-4 accent-violet-600"
           defaultChecked={initial?.calendarRemind !== false}
         />
         Напоминание в Google Calendar
       </label>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="text-sm text-red-400">{error}</p> : null}
       <div className="flex flex-col-reverse gap-2 sm:flex-row">
         <button
           type="submit"
           disabled={loading}
-          className="min-h-11 w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50 sm:w-auto dark:bg-zinc-100 dark:text-zinc-900"
+          className="min-h-11 w-full rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50 sm:w-auto"
         >
           {loading ? "Сохранение…" : editing ? "Сохранить" : "Добавить"}
         </button>
@@ -199,7 +212,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
             type="button"
             onClick={onDelete}
             disabled={loading}
-            className="min-h-11 w-full rounded-lg border border-red-300 px-4 py-2.5 text-sm text-red-700 sm:w-auto dark:border-red-800 dark:text-red-300"
+            className="min-h-11 w-full rounded-lg border border-red-800 px-4 py-2.5 text-sm text-red-300 sm:w-auto"
           >
             Удалить
           </button>

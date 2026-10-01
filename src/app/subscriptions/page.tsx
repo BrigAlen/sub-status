@@ -27,7 +27,7 @@ export default async function SubscriptionsPage() {
         </div>
         <Link
           href="/subscriptions/new"
-          className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white sm:w-auto dark:bg-zinc-100 dark:text-zinc-900"
+          className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-violet-700 sm:w-auto"
         >
           Добавить
         </Link>

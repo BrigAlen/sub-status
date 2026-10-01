@@ -21,8 +21,8 @@ export function Nav() {
       className={
         "inline-flex min-h-11 min-w-[4.5rem] flex-1 items-center justify-center rounded-lg px-3 py-2.5 text-sm font-medium transition sm:min-h-0 sm:min-w-0 sm:flex-none sm:py-1.5 " +
         (pathname === href || (href !== "/" && pathname.startsWith(href))
-          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-          : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800")
+          ? "bg-violet-600 text-white shadow-sm shadow-violet-900/40"
+          : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100")
       }
     >
       {label}
@@ -30,18 +30,18 @@ export function Nav() {
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
+    <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-[#0a0a0a]/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div className="flex items-center justify-between gap-3">
-          <span className="truncate text-lg font-semibold tracking-tight">
+          <span className="font-display truncate text-lg font-semibold tracking-tight">
             Статус подписок
           </span>
           <button
             type="button"
             onClick={logout}
-            className="inline-flex min-h-11 shrink-0 items-center rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-50 sm:hidden dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-900 sm:hidden"
           >
-            Выйти
+            Выход
           </button>
         </div>
         <div className="flex items-stretch gap-2 sm:items-center">
@@ -53,9 +53,9 @@ export function Nav() {
           <button
             type="button"
             onClick={logout}
-            className="hidden min-h-11 shrink-0 items-center rounded-lg border border-zinc-200 px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 sm:inline-flex sm:min-h-0 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            className="hidden min-h-11 shrink-0 items-center rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-900 sm:inline-flex sm:min-h-0"
           >
-            Выйти
+            Выход
           </button>
         </div>
       </div>
