@@ -347,11 +347,28 @@ function eventIdFor(subId: string): string {
   return "substatus" + hex.slice(0, 26);
 }
 
+/** Google all-day events use exclusive end date (next calendar day). */
+function exclusiveEndDate(yyyyMmDd: string): string {
+  const d = new Date(yyyyMmDd + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+async function readErrorBody(res: Response): Promise<string> {
+  try {
+    const t = await res.text();
+    return t.slice(0, 500);
+  } catch {
+    return "";
+  }
+}
+
 export async function syncPaymentReminders(): Promise<{
   ok: boolean;
   upserted: number;
   skipped: number;
   error?: string;
+  errors?: string[];
 }> {
   try {
     const settings = await getGcalSettings();
@@ -370,8 +387,19 @@ export async function syncPaymentReminders(): Promise<{
       (s) => s.isActive && s.calendarRemind && s.nextBillingAt
     );
 
+    if (targets.length === 0) {
+      return {
+        ok: true,
+        upserted: 0,
+        skipped: 0,
+        error:
+          "Нет подписок для синхронизации: нужны isActive, calendarRemind и nextBillingAt",
+      };
+    }
+
     let upserted = 0;
     let skipped = 0;
+    const errors: string[] = [];
     const cal = encodeURIComponent(settings.calendarId || "primary");
 
     for (const sub of targets) {
@@ -400,53 +428,81 @@ export async function syncPaymentReminders(): Promise<{
         summary,
         description,
         start: { date: day },
-        end: { date: day },
+        // Google Calendar all-day end is exclusive → next day
+        end: { date: exclusiveEndDate(day) },
         transparency: "transparent",
       };
 
-      // try update, else insert
+      const authHeaders = {
+        Authorization: "Bearer " + access,
+        "Content-Type": "application/json",
+      };
       const patchUrl =
         "https://www.googleapis.com/calendar/v3/calendars/" +
         cal +
         "/events/" +
         id;
+      const insertUrl =
+        "https://www.googleapis.com/calendar/v3/calendars/" + cal + "/events";
+
       const patchRes = await fetch(patchUrl, {
         method: "PUT",
-        headers: {
-          Authorization: "Bearer " + access,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders,
         body: JSON.stringify(body),
         cache: "no-store",
       });
-      if (patchRes.ok || patchRes.status === 200) {
+      if (patchRes.ok) {
         upserted += 1;
         continue;
       }
-      if (patchRes.status === 404) {
-        const insertUrl =
-          "https://www.googleapis.com/calendar/v3/calendars/" + cal + "/events";
-        const ins = await fetch(insertUrl, {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer " + access,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-          cache: "no-store",
-        });
-        if (!ins.ok) {
-          skipped += 1;
-          continue;
-        }
+
+      const patchErr = await readErrorBody(patchRes);
+      console.error(
+        "[gcal] PUT failed",
+        sub.name,
+        id,
+        patchRes.status,
+        patchErr
+      );
+
+      // 404: create; 400/other: try POST once with same (fixed) body
+      const ins = await fetch(insertUrl, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify(body),
+        cache: "no-store",
+      });
+      if (ins.ok) {
         upserted += 1;
-      } else {
-        skipped += 1;
+        continue;
       }
+      const insErr = await readErrorBody(ins);
+      console.error(
+        "[gcal] POST failed",
+        sub.name,
+        id,
+        ins.status,
+        insErr
+      );
+      const detail =
+        sub.name +
+        ": PUT " +
+        patchRes.status +
+        (patchErr ? " " + patchErr.slice(0, 120) : "") +
+        "; POST " +
+        ins.status +
+        (insErr ? " " + insErr.slice(0, 120) : "");
+      if (errors.length < 5) errors.push(detail);
+      skipped += 1;
     }
 
-    return { ok: true, upserted, skipped };
-  } catch (e) {
+    return {
+      ok: true,
+      upserted,
+      skipped,
+      ...(errors.length ? { errors } : {}),
+    };
+  } catch (e) {  } catch (e) {
     return {
       ok: false,
       upserted: 0,

@@ -71,7 +71,20 @@ function labelRank(label: string): number {
   return 10;
 }
 
-/** Latest snapshot per label for a subscription (snaps must be newest-first). */
+/** Collapse aliases so «неделя» and «7дн окно» share one weekly slot. */
+function labelBucket(label: string): string {
+  if (/5\s*h|5ч|five_hour|five-hour/i.test(label)) return "five_hour";
+  if (/неделя|7\s*d|7дн|seven_day|week/i.test(label)) return "seven_day";
+  return label;
+}
+
+function preferWeeklyLabel(snap: UsageSnapshot): UsageSnapshot {
+  if (labelBucket(snap.label) !== "seven_day") return snap;
+  if (snap.label === "неделя") return snap;
+  return { ...snap, label: "неделя" };
+}
+
+/** Latest snapshot per logical window (snaps must be newest-first). */
 function latestSnapsByLabel(
   snaps: UsageSnapshot[],
   subscriptionId: string
@@ -81,9 +94,10 @@ function latestSnapsByLabel(
   const seen = new Set<string>();
   const out: UsageSnapshot[] = [];
   for (const s of mine) {
-    if (seen.has(s.label)) continue;
-    seen.add(s.label);
-    out.push(s);
+    const bucket = labelBucket(s.label);
+    if (seen.has(bucket)) continue;
+    seen.add(bucket);
+    out.push(preferWeeklyLabel(s));
   }
   out.sort((a, b) => labelRank(a.label) - labelRank(b.label));
   return out;

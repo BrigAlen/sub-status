@@ -18,7 +18,14 @@ export const subscriptionCreateSchema = z.object({
   provider: providerEnum,
   kind: kindEnum,
   amountCents: z.number().int().min(0).max(100_000_000).nullable().optional(),
-  currency: z.string().trim().min(3).max(3).default("RUB"),
+  currency: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine((c) => ["BYN", "EUR", "USD", "RUB"].includes(c), {
+      message: "currency must be BYN, EUR, or USD",
+    })
+    .default("BYN"),
   billingPeriod: periodEnum,
   nextBillingAt: z
     .string()

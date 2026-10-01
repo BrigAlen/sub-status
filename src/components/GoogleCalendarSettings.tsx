@@ -66,16 +66,26 @@ export function GoogleCalendarSettings() {
       const res = await apiMutate("/api/google/calendar/sync", "POST");
       const body = (await res.json()) as {
         error?: string;
-        data?: { ok: boolean; upserted: number; skipped: number; error?: string };
+        data?: {
+          ok: boolean;
+          upserted: number;
+          skipped: number;
+          error?: string;
+          errors?: string[];
+        };
       };
       if (!res.ok && !body.data)
         throw new Error(body.error || "Ошибка синхронизации");
       const d = body.data!;
       if (!d.ok) setErr(d.error || "Синхронизация не удалась");
-      else
-        setMsg(
-          "Синхронизация: обновлено " + d.upserted + ", пропущено " + d.skipped
-        );
+      else {
+        let text =
+          "Синхронизация: обновлено " + d.upserted + ", пропущено " + d.skipped;
+        if (d.errors && d.errors.length)
+          text += ". " + d.errors.slice(0, 2).join("; ");
+        if (d.error) text += ". " + d.error;
+        setMsg(text);
+      }
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Ошибка");
     } finally {

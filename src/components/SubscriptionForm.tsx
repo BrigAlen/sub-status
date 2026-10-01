@@ -28,6 +28,12 @@ const providers = [
   ["other", "Другое"],
 ] as const;
 
+const currencies = [
+  ["BYN", "🇧🇾 BYN"],
+  ["EUR", "🇪🇺 EUR"],
+  ["USD", "🇺🇸 USD"],
+] as const;
+
 export function SubscriptionForm({ initial }: { initial?: Initial }) {
   const router = useRouter();
   const editing = Boolean(initial?.id);
@@ -50,7 +56,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
       provider: String(fd.get("provider") || "other"),
       kind: String(fd.get("kind") || "billing_only"),
       amountCents: Number.isFinite(amountCents as number) ? amountCents : null,
-      currency: String(fd.get("currency") || "RUB"),
+      currency: String(fd.get("currency") || "BYN"),
       billingPeriod: String(fd.get("billingPeriod") || "monthly"),
       nextBillingAt: String(fd.get("nextBillingAt") || "") || null,
       notes: String(fd.get("notes") || "") || null,
@@ -128,7 +134,25 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
         </label>
         <label className="block text-sm">
           Валюта
-          <input name="currency" defaultValue={initial?.currency || "RUB"} maxLength={3} className={field} />
+          <select
+            name="currency"
+            defaultValue={
+              ["BYN", "EUR", "USD"].includes(initial?.currency || "")
+                ? initial!.currency!
+                : initial?.currency
+                  ? initial.currency
+                  : "BYN"
+            }
+            className={field}
+          >
+            {currencies.map(([v, l]) => (
+              <option key={v} value={v}>{l}</option>
+            ))}
+            {initial?.currency &&
+            !["BYN", "EUR", "USD"].includes(initial.currency) ? (
+              <option value={initial.currency}>{initial.currency}</option>
+            ) : null}
+          </select>
         </label>
       </div>
       <label className="block text-sm">
