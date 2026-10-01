@@ -25,6 +25,7 @@ const providers = [
   ["yandex", "Яндекс"],
   ["boosty", "Boosty"],
   ["apple", "Apple"],
+  ["mullvad", "Mullvad"],
   ["other", "Другое"],
 ] as const;
 

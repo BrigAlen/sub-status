@@ -7,6 +7,7 @@ export const providerEnum = z.enum([
   "yandex",
   "boosty",
   "apple",
+  "mullvad",
   "other",
 ]);
 

@@ -119,6 +119,30 @@ function AppleMark({ size, className }: { size: number; className: string }) {
   );
 }
 
+
+function MullvadMark({ size, className }: { size: number; className: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      className={"shrink-0 rounded-lg " + className}
+      aria-hidden
+      role="img"
+    >
+      <rect width="32" height="32" rx="8" fill="#FFCC00" />
+      {/* Decorative Mullvad-style yellow/black mark (not an official trademark asset). */}
+      <circle cx="16" cy="15" r="8.2" fill="#111111" />
+      <path
+        fill="#FFCC00"
+        d="M16 9.2c-1.6 0-2.9 1.1-2.9 2.9 0 1.3.7 2.3 1.7 2.8v1.6h2.4v-1.6c1-.5 1.7-1.5 1.7-2.8 0-1.8-1.3-2.9-2.9-2.9zm0 1.6c.7 0 1.3.5 1.3 1.3S16.7 13.4 16 13.4s-1.3-.5-1.3-1.3.6-1.3 1.3-1.3z"
+      />
+      <rect x="13.6" y="16.2" width="4.8" height="5.4" rx="1.2" fill="#FFCC00" />
+      <rect x="14.7" y="17.4" width="2.6" height="2.2" rx="0.6" fill="#111111" />
+    </svg>
+  );
+}
+
 function LetterMark({
   size,
   className,
@@ -165,6 +189,7 @@ export function ProviderIcon({ provider, className = "", size = 28 }: Props) {
   if (provider === "google") return <GoogleMark size={size} className={className} />;
   if (provider === "yandex") return <YandexMark size={size} className={className} />;
   if (provider === "apple") return <AppleMark size={size} className={className} />;
+  if (provider === "mullvad") return <MullvadMark size={size} className={className} />;
   if (provider === "boosty")
     return (
       <LetterMark
