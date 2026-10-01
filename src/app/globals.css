@@ -74,7 +74,7 @@ samp {
 main {
   max-width: 100%;
   min-width: 0;
-  /* safe-area as padding inside 100% width — do not use 100vw */
+  /* safe-area as padding inside 100% width - do not use 100vw */
   padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   padding-left: max(0px, env(safe-area-inset-left, 0px));
   padding-right: max(0px, env(safe-area-inset-right, 0px));
