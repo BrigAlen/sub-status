@@ -1,4 +1,9 @@
-import type { ClaudeTokens, ProviderFetchResult, UsageWindow } from "./types";
+import type {
+  ClaudeTokens,
+  ProviderBilling,
+  ProviderFetchResult,
+  UsageWindow,
+} from "./types";
 
 const CLAUDE_USAGE_URL = "https://api.anthropic.com/api/oauth/usage";
 const CLAUDE_TOKEN_URL = "https://console.anthropic.com/v1/oauth/token";
@@ -37,6 +42,34 @@ function windowFrom(
   };
 }
 
+
+function asRecord(v: unknown): Record<string, unknown> | null {
+  return v && typeof v === "object" && !Array.isArray(v)
+    ? (v as Record<string, unknown>)
+    : null;
+}
+
+/**
+ * Billing from Claude usage payload. Usage API has no next-billing date and no
+ * list price — only plan hints (e.g. seven_day_opus => Max). Never invent prices.
+ */
+export function billingFromClaudeUsage(data: unknown): ProviderBilling {
+  const root = asRecord(data) ?? {};
+  const opus = asRecord(root.seven_day_opus ?? root.sevenDayOpus);
+  const hasOpus = Boolean(opus);
+  const hasFive = Boolean(asRecord(root.five_hour ?? root.fiveHour));
+  const hasWeek = Boolean(
+    asRecord(root.seven_day ?? root.sevenDay ?? root.week ?? root.weekly)
+  );
+  const billing: ProviderBilling = {};
+  if (hasOpus) billing.name = "Claude Max";
+  else if (hasFive || hasWeek) billing.name = "Claude Pro";
+  // Usage API has no list price and no next-billing date — never invent them.
+  billing.currency = "USD";
+  billing.billingPeriod = "monthly";
+  return billing;
+}
+
 function parseUsagePayload(data: unknown): UsageWindow[] {
   const root = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
   const windows: UsageWindow[] = [];
@@ -47,8 +80,10 @@ function parseUsagePayload(data: unknown): UsageWindow[] {
   );
   const seven = windowFrom(
     "seven_day",
-    "7дн окно",
-    (root.seven_day ?? root.sevenDay) as Record<string, unknown> | undefined
+    "неделя",
+    (root.seven_day ?? root.sevenDay ?? root.week ?? root.weekly) as
+      | Record<string, unknown>
+      | undefined
   );
   if (five) windows.push(five);
   if (seven) windows.push(seven);

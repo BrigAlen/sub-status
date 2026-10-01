@@ -123,4 +123,15 @@ export const MOCK_USAGE: UsageSnapshot[] = [
     rawJson: { demo: true },
     capturedAt: now,
   },
+  {
+    id: "10000000-0000-4000-8000-000000000003",
+    subscriptionId: "00000000-0000-4000-8000-000000000002",
+    source: "manual",
+    label: "неделя",
+    usedPercent: "18.00",
+    remainingText: "82% свободно",
+    resetsAt: new Date(now.getTime() + 4 * 24 * 3600 * 1000),
+    rawJson: { demo: true },
+    capturedAt: now,
+  },
 ];

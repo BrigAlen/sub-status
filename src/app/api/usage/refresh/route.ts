@@ -9,7 +9,7 @@ import { providerCredentials, usageSnapshots } from "@/db/schema";
 import { writeAudit } from "@/lib/audit";
 import { handleApiError, jsonError } from "@/lib/api";
 import { ensureProviderSubscription } from "@/lib/ensure-subscriptions";
-import { listLatestUsage } from "@/lib/subscriptions";
+import { applyProviderBilling, listLatestUsage } from "@/lib/subscriptions";
 import {
   fetchClaudeUsage,
   parseClaudeSecret,
@@ -34,6 +34,32 @@ async function loadCredential(provider: "cursor" | "claude") {
     .where(eq(providerCredentials.provider, provider))
     .limit(1);
   return rows[0] ?? null;
+}
+
+
+async function mergeBilling(
+  sub: { id: string; notes: string | null; amountCents: number | null },
+  billing: {
+    name?: string;
+    amountCents?: number | null;
+    currency?: string;
+    nextBillingAt?: string | null;
+    billingPeriod?: string;
+  } | undefined,
+  opts: { clearSeedNextBilling?: boolean } = {}
+) {
+  if (!billing) return;
+  const auto = (sub.notes || "").includes("Автосоздано");
+  const patch: typeof billing = { ...billing };
+  // Clear invented seed $20 when API has no price
+  if (!("amountCents" in patch) || patch.amountCents == null) {
+    if (auto || sub.amountCents === 2000) patch.amountCents = null;
+    else delete (patch as { amountCents?: number | null }).amountCents;
+  }
+  if (opts.clearSeedNextBilling && !("nextBillingAt" in patch)) {
+    if (auto) patch.nextBillingAt = null;
+  }
+  await applyProviderBilling(sub.id, patch);
 }
 
 async function insertWindows(
@@ -124,6 +150,9 @@ export async function POST(req: Request) {
             result.windows,
             result.raw
           );
+          await mergeBilling(sub, result.billing, {
+            clearSeedNextBilling: true,
+          });
           reports.push({
             provider: "claude",
             ok: true,
@@ -172,6 +201,7 @@ export async function POST(req: Request) {
             result.windows,
             result.raw
           );
+          await mergeBilling(sub, result.billing);
           reports.push({
             provider: "cursor",
             ok: true,

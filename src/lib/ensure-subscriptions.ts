@@ -4,23 +4,21 @@ import { subscriptions, type Subscription } from "@/db/schema";
 
 const DEFAULTS: Record<
   "cursor" | "claude",
-  { name: string; kind: string; amountCents: number; currency: string }
+  { name: string; kind: string; currency: string }
 > = {
   cursor: {
-    name: "Cursor Pro",
+    name: "Cursor",
     kind: "both",
-    amountCents: 2000,
     currency: "USD",
   },
   claude: {
-    name: "Claude Pro",
+    name: "Claude",
     kind: "both",
-    amountCents: 2000,
     currency: "USD",
   },
 };
 
-/** Find active subscription by provider or create Cursor Pro / Claude Pro. */
+/** Find active subscription by provider or create Cursor / Claude shell (no invented price/date). */
 export async function ensureProviderSubscription(
   provider: "cursor" | "claude"
 ): Promise<Subscription> {
@@ -36,18 +34,16 @@ export async function ensureProviderSubscription(
   if (existing[0]) return existing[0];
 
   const def = DEFAULTS[provider];
-  const next = new Date();
-  next.setDate(next.getDate() + 30);
   const rows = await db
     .insert(subscriptions)
     .values({
       name: def.name,
       provider,
       kind: def.kind,
-      amountCents: def.amountCents,
+      amountCents: null,
       currency: def.currency,
       billingPeriod: "monthly",
-      nextBillingAt: next.toISOString().slice(0, 10),
+      nextBillingAt: null,
       notes: "Автосоздано при сохранении учётных данных",
       isActive: true,
       calendarRemind: true,

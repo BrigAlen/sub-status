@@ -1,4 +1,9 @@
-import type { CursorSecret, ProviderFetchResult, UsageWindow } from "./types";
+import type {
+  CursorSecret,
+  ProviderBilling,
+  ProviderFetchResult,
+  UsageWindow,
+} from "./types";
 
 const USAGE_SUMMARY = "https://cursor.com/api/usage-summary";
 const USAGE_FALLBACK = "https://cursor.com/api/usage";
@@ -230,6 +235,58 @@ function deepFindUsage(
   }
 }
 
+
+function membershipDisplayName(membership: string): string {
+  const key = membership.trim().toLowerCase().replace(/[_\s]+/g, "-");
+  const map: Record<string, string> = {
+    free: "Cursor Free",
+    hobby: "Cursor Hobby",
+    pro: "Cursor Pro",
+    "pro-plus": "Cursor Pro Plus",
+    proplus: "Cursor Pro Plus",
+    plus: "Cursor Pro Plus",
+    ultra: "Cursor Ultra",
+    business: "Cursor Business",
+    team: "Cursor Team",
+    enterprise: "Cursor Enterprise",
+  };
+  if (map[key]) return map[key];
+  const pretty = membership
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return pretty.toLowerCase().startsWith("cursor") ? pretty : "Cursor " + pretty;
+}
+
+function toBillingDate(v: unknown): string | null {
+  const d = parseResetsAt(v);
+  if (!d) return null;
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Real billing fields from usage-summary. Price is not in this API — do not invent.
+ * nextBillingAt comes from billingCycleEnd when present.
+ */
+export function billingFromCursorUsage(data: unknown): ProviderBilling {
+  let root = asRecord(data) ?? {};
+  const nested = asRecord(root.data);
+  if (nested && (nested.individualUsage || nested.billingCycleEnd || nested.membershipType)) {
+    root = nested;
+  }
+  const billing: ProviderBilling = {};
+  const membership =
+    typeof root.membershipType === "string" ? root.membershipType.trim() : "";
+  if (membership) billing.name = membershipDisplayName(membership);
+  const next = toBillingDate(
+    root.billingCycleEnd ?? root.billing_cycle_end ?? root.nextBillingDate
+  );
+  if (next) billing.nextBillingAt = next;
+  // usage-summary has no list price — never invent amountCents.
+  billing.currency = "USD";
+  billing.billingPeriod = "monthly";
+  return billing;
+}
+
 function windowsFromPayload(data: unknown): UsageWindow[] {
   if (!data || typeof data !== "object") return [];
   // unwrap { data: {...} }
@@ -381,6 +438,7 @@ export async function fetchCursorUsage(
     }
 
     const windows = windowsFromPayload(result.data);
+    const billing = billingFromCursorUsage(result.data);
     if (windows.length === 0) {
       return {
         provider: "cursor",
@@ -390,9 +448,10 @@ export async function fetchCursorUsage(
           "Cursor: неожиданный формат ответа [" +
           outlineKeys(result.data) +
           "]",
+        billing,
       };
     }
-    return { provider: "cursor", windows, raw: result.data };
+    return { provider: "cursor", windows, raw: result.data, billing };
   } catch (e) {
     return {
       provider: "cursor",

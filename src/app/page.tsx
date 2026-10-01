@@ -11,6 +11,46 @@ import { stubClaudeUsage, stubCursorUsage } from "@/providers/stub";
 
 export const dynamic = "force-dynamic";
 
+function GearIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="shrink-0"
+    >
+      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="shrink-0"
+    >
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </svg>
+  );
+}
+
 export default async function DashboardPage() {
   let limitRows: Awaited<ReturnType<typeof latestUsageForProviders>> = [];
   let payments: Awaited<ReturnType<typeof listSubscriptions>> = [];
@@ -29,42 +69,47 @@ export default async function DashboardPage() {
   const cursorStub = stubCursorUsage();
   const claudeStub = stubClaudeUsage();
 
-  function cardFor(provider: "cursor" | "claude") {
+  function cardsFor(provider: "cursor" | "claude") {
     const found = limitRows.find((r) => r.sub.provider === provider);
     const stub = provider === "cursor" ? cursorStub : claudeStub;
-    if (found && found.snap) {
-      const pct =
-        found.snap.usedPercent != null ? Number(found.snap.usedPercent) : null;
-      return (
-        <LimitCard
-          key={provider}
-          provider={provider}
-          name={found.sub.name}
-          usedPercent={pct}
-          remainingText={found.snap.remainingText}
-          resetsAt={
-            found.snap.resetsAt ? found.snap.resetsAt.toISOString() : null
-          }
-          label={found.snap.label}
-          capturedAt={
-            found.snap.capturedAt ? found.snap.capturedAt.toISOString() : null
-          }
-          stubNote={mock ? stub.note : undefined}
-        />
-      );
+    const name =
+      found?.sub.name ??
+      (provider === "cursor" ? "Cursor Pro" : "Claude Pro");
+
+    if (found && found.snaps.length > 0) {
+      return found.snaps.map((snap) => {
+        const pct =
+          snap.usedPercent != null ? Number(snap.usedPercent) : null;
+        return (
+          <LimitCard
+            key={provider + ":" + snap.label + ":" + snap.id}
+            provider={provider}
+            name={name}
+            usedPercent={pct}
+            remainingText={snap.remainingText}
+            resetsAt={snap.resetsAt ? snap.resetsAt.toISOString() : null}
+            label={snap.label}
+            capturedAt={
+              snap.capturedAt ? snap.capturedAt.toISOString() : null
+            }
+            stubNote={mock ? stub.note : undefined}
+          />
+        );
+      });
     }
-    return (
+
+    return [
       <LimitCard
-        key={provider}
+        key={provider + ":empty"}
         provider={provider}
-        name={found?.sub.name ?? (provider === "cursor" ? "Cursor Pro" : "Claude Pro")}
+        name={name}
         usedPercent={null}
         remainingText={null}
         resetsAt={null}
         label={stub.label}
         stubNote={stub.note}
-      />
-    );
+      />,
+    ];
   }
 
   const sorted = payments.slice().sort(function (a, b) {
@@ -74,7 +119,7 @@ export default async function DashboardPage() {
   });
 
   const lastSync = limitRows
-    .map((r) => r.snap?.capturedAt)
+    .flatMap((r) => r.snaps.map((s) => s.capturedAt))
     .filter((d): d is Date => Boolean(d))
     .sort((a, b) => b.getTime() - a.getTime())[0];
 
@@ -101,14 +146,16 @@ export default async function DashboardPage() {
           <RefreshUsageButton />
           <Link
             href="/settings"
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
           >
+            <GearIcon />
             Настройки
           </Link>
           <Link
             href="/subscriptions/new"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
           >
+            <PlusIcon />
             Добавить подписку
           </Link>
         </div>
@@ -123,8 +170,8 @@ export default async function DashboardPage() {
       <section>
         <h2 className="mb-3 text-lg font-semibold">Лимиты</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          {cardFor("cursor")}
-          {cardFor("claude")}
+          {cardsFor("cursor")}
+          {cardsFor("claude")}
         </div>
       </section>
 

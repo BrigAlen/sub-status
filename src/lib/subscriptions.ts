@@ -65,27 +65,33 @@ export async function deleteSubscription(id: string): Promise<boolean> {
   return rows.length > 0;
 }
 
-function pickBestSnap(
+function labelRank(label: string): number {
+  if (/5\s*h|5ч|five_hour|five-hour/i.test(label)) return 0;
+  if (/неделя|7\s*d|7дн|seven_day|week/i.test(label)) return 1;
+  return 10;
+}
+
+/** Latest snapshot per label for a subscription (snaps must be newest-first). */
+function latestSnapsByLabel(
   snaps: UsageSnapshot[],
-  subscriptionId: string,
-  provider: string
-): UsageSnapshot | null {
+  subscriptionId: string
+): UsageSnapshot[] {
   const mine = snaps.filter((s) => s.subscriptionId === subscriptionId);
-  if (mine.length === 0) return null;
-  if (provider === "claude") {
-    const five = mine.find(
-      (s) =>
-        /5\s*h|5ч|five_hour|five-hour/i.test(s.label) ||
-        s.label === "5ч окно"
-    );
-    if (five) return five;
+  if (mine.length === 0) return [];
+  const seen = new Set<string>();
+  const out: UsageSnapshot[] = [];
+  for (const s of mine) {
+    if (seen.has(s.label)) continue;
+    seen.add(s.label);
+    out.push(s);
   }
-  return mine[0] ?? null;
+  out.sort((a, b) => labelRank(a.label) - labelRank(b.label));
+  return out;
 }
 
 export async function latestUsageForProviders(
   providers: string[]
-): Promise<{ sub: Subscription; snap: UsageSnapshot | null }[]> {
+): Promise<{ sub: Subscription; snaps: UsageSnapshot[] }[]> {
   const all = await listSubscriptions();
   const relevant = all.filter(
     (s) => s.isActive && providers.includes(s.provider)
@@ -94,7 +100,7 @@ export async function latestUsageForProviders(
   if (!db) {
     return relevant.map((sub) => ({
       sub,
-      snap: MOCK_USAGE.find((u) => u.subscriptionId === sub.id) ?? null,
+      snaps: MOCK_USAGE.filter((u) => u.subscriptionId === sub.id),
     }));
   }
   const ids = relevant.map((s) => s.id);
@@ -107,7 +113,7 @@ export async function latestUsageForProviders(
 
   return relevant.map((sub) => ({
     sub,
-    snap: pickBestSnap(snaps, sub.id, sub.provider),
+    snaps: latestSnapsByLabel(snaps, sub.id),
   }));
 }
 
@@ -122,4 +128,37 @@ export async function listLatestUsage(): Promise<UsageSnapshot[]> {
     .from(usageSnapshots)
     .orderBy(desc(usageSnapshots.capturedAt))
     .limit(50);
+}
+
+/** Apply real billing fields from provider refresh. Only defined keys are written. */
+export async function applyProviderBilling(
+  subscriptionId: string,
+  billing: {
+    name?: string;
+    amountCents?: number | null;
+    currency?: string;
+    nextBillingAt?: string | null;
+    billingPeriod?: string;
+  }
+): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  const patch: Partial<NewSubscription> = { updatedAt: new Date() };
+  if (billing.name != null && billing.name.trim()) patch.name = billing.name.trim();
+  if ("amountCents" in billing) patch.amountCents = billing.amountCents ?? null;
+  if (billing.currency != null && billing.currency.trim()) {
+    patch.currency = billing.currency.trim().toUpperCase();
+  }
+  if ("nextBillingAt" in billing) {
+    patch.nextBillingAt = billing.nextBillingAt ?? null;
+  }
+  if (billing.billingPeriod != null && billing.billingPeriod.trim()) {
+    patch.billingPeriod = billing.billingPeriod.trim();
+  }
+  const keys = Object.keys(patch).filter((k) => k !== "updatedAt");
+  if (keys.length === 0) return;
+  await db
+    .update(subscriptions)
+    .set(patch)
+    .where(eq(subscriptions.id, subscriptionId));
 }
