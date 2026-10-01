@@ -15,6 +15,7 @@ type Initial = {
   nextBillingAt?: string | null;
   notes?: string | null;
   isActive?: boolean;
+  calendarRemind?: boolean;
 };
 
 const providers = [
@@ -23,6 +24,7 @@ const providers = [
   ["google", "Google"],
   ["yandex", "Яндекс"],
   ["boosty", "Boosty"],
+  ["apple", "Apple"],
   ["other", "Другое"],
 ] as const;
 
@@ -53,6 +55,7 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
       nextBillingAt: String(fd.get("nextBillingAt") || "") || null,
       notes: String(fd.get("notes") || "") || null,
       isActive: fd.get("isActive") === "on",
+      calendarRemind: fd.get("calendarRemind") === "on",
     };
 
     try {
@@ -147,6 +150,14 @@ export function SubscriptionForm({ initial }: { initial?: Initial }) {
       <label className="flex items-center gap-2 text-sm">
         <input name="isActive" type="checkbox" defaultChecked={initial?.isActive !== false} />
         Активна
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          name="calendarRemind"
+          type="checkbox"
+          defaultChecked={initial?.calendarRemind !== false}
+        />
+        Напоминание в Google Calendar
       </label>
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       <div className="flex gap-2">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { daysUntil, formatMoney, providerLabel } from "@/lib/format";
 import type { Subscription } from "@/db/schema";
+import { ProviderIcon } from "@/components/ProviderIcon";
 
 export function PaymentRow({ sub }: { sub: Subscription }) {
   const days = daysUntil(sub.nextBillingAt);
@@ -29,19 +30,22 @@ export function PaymentRow({ sub }: { sub: Subscription }) {
         (!sub.isActive ? "opacity-50" : "")
       }
     >
-      <div>
-        <p className="font-medium">
-          {sub.name}{" "}
-          <span className="text-xs font-normal text-zinc-500">
-            ({providerLabel(sub.provider)})
-          </span>
-        </p>
-        <p className="text-sm text-zinc-500">
-          {formatMoney(sub.amountCents, sub.currency)} · {sub.billingPeriod}
-          {!sub.isActive ? " · неактивна" : ""}
-        </p>
+      <div className="flex items-center gap-3 min-w-0">
+        <ProviderIcon provider={sub.provider} size={32} />
+        <div className="min-w-0">
+          <p className="font-medium truncate">
+            {sub.name}{" "}
+            <span className="text-xs font-normal text-zinc-500">
+              ({providerLabel(sub.provider)})
+            </span>
+          </p>
+          <p className="text-sm text-zinc-500">
+            {formatMoney(sub.amountCents, sub.currency)} · {sub.billingPeriod}
+            {!sub.isActive ? " · неактивна" : ""}
+          </p>
+        </div>
       </div>
-      <div className="text-right">
+      <div className="text-right shrink-0">
         <span className={"inline-block rounded-full px-2.5 py-1 text-xs font-medium " + badge}>
           {daysText}
         </span>

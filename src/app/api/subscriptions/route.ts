@@ -42,6 +42,7 @@ export async function POST(req: Request) {
       nextBillingAt: parsed.nextBillingAt ?? null,
       notes: parsed.notes ?? null,
       isActive: parsed.isActive ?? true,
+      calendarRemind: parsed.calendarRemind ?? true,
     });
 
     await writeAudit({

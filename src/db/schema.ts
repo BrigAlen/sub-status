@@ -22,6 +22,7 @@ export const subscriptions = pgTable("subscriptions", {
   nextBillingAt: date("next_billing_at"),
   notes: text("notes"),
   isActive: boolean("is_active").default(true).notNull(),
+  calendarRemind: boolean("calendar_remind").default(true).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -79,9 +80,17 @@ export const auditLogs = pgTable("audit_logs", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+/** App-wide settings (JSON). Secrets stay in provider_credentials. */
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
 export type UsageSnapshot = typeof usageSnapshots.$inferSelect;
 export type NewUsageSnapshot = typeof usageSnapshots.$inferInsert;
 export type ProviderCredential = typeof providerCredentials.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
+export type AppSetting = typeof appSettings.$inferSelect;

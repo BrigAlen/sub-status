@@ -30,6 +30,7 @@ async function main() {
         nextBillingAt: inDays(12),
         notes: "Seed: Cursor subscription (usage limits)",
         isActive: true,
+        calendarRemind: true,
       },
       {
         name: "Claude Pro",
@@ -41,6 +42,7 @@ async function main() {
         nextBillingAt: inDays(5),
         notes: "Seed: Claude subscription (usage limits)",
         isActive: true,
+        calendarRemind: true,
       },
       {
         name: "Google One",
@@ -51,6 +53,7 @@ async function main() {
         billingPeriod: "monthly",
         nextBillingAt: inDays(18),
         isActive: true,
+        calendarRemind: true,
       },
       {
         name: "Яндекс 360",
@@ -61,6 +64,19 @@ async function main() {
         billingPeriod: "monthly",
         nextBillingAt: inDays(22),
         isActive: true,
+        calendarRemind: true,
+      },
+      {
+        name: "Apple One",
+        provider: "apple",
+        kind: "billing_only",
+        amountCents: 29900,
+        currency: "RUB",
+        billingPeriod: "monthly",
+        nextBillingAt: inDays(15),
+        notes: "Seed: Apple (ручной биллинг, без live usage)",
+        isActive: true,
+        calendarRemind: true,
       },
       {
         name: "Boosty",
@@ -72,6 +88,7 @@ async function main() {
         nextBillingAt: inDays(3),
         notes: "Неактивный seed",
         isActive: false,
+        calendarRemind: false,
       },
     ])
     .returning();
@@ -92,7 +109,7 @@ async function main() {
     {
       subscriptionId: claude.id,
       source: "manual",
-      label: "5h window",
+      label: "5ч окно",
       usedPercent: "42.00",
       remainingText: "осталось ~3ч",
       resetsAt: new Date(Date.now() + 5 * 3600000),
@@ -101,6 +118,7 @@ async function main() {
   ]);
 
   console.log("Seed OK:", inserted.length, "subscriptions");
+  console.log("Optional SQL: db/seed-providers.sql, migration: db/migrations/0001_calendar.sql");
 }
 
 main().catch((e) => {

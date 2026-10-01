@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LimitCard } from "@/components/LimitCard";
 import { PaymentRow } from "@/components/PaymentRow";
+import { RefreshUsageButton } from "@/components/RefreshUsageButton";
 import {
   latestUsageForProviders,
   listSubscriptions,
@@ -45,6 +46,9 @@ export default async function DashboardPage() {
             found.snap.resetsAt ? found.snap.resetsAt.toISOString() : null
           }
           label={found.snap.label}
+          capturedAt={
+            found.snap.capturedAt ? found.snap.capturedAt.toISOString() : null
+          }
           stubNote={mock ? stub.note : undefined}
         />
       );
@@ -53,10 +57,10 @@ export default async function DashboardPage() {
       <LimitCard
         key={provider}
         provider={provider}
-        name={provider === "cursor" ? "Cursor Pro" : "Claude Pro"}
-        usedPercent={stub.usedPercent}
-        remainingText={stub.remainingText}
-        resetsAt={stub.resetsAt}
+        name={found?.sub.name ?? (provider === "cursor" ? "Cursor Pro" : "Claude Pro")}
+        usedPercent={null}
+        remainingText={null}
+        resetsAt={null}
         label={stub.label}
         stubNote={stub.note}
       />
@@ -69,6 +73,11 @@ export default async function DashboardPage() {
     return a.nextBillingAt.localeCompare(b.nextBillingAt);
   });
 
+  const lastSync = limitRows
+    .map((r) => r.snap?.capturedAt)
+    .filter((d): d is Date => Boolean(d))
+    .sort((a, b) => b.getTime() - a.getTime())[0];
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -77,19 +86,37 @@ export default async function DashboardPage() {
           <p className="text-sm text-zinc-500">
             Лимиты использования и ближайшие оплаты
             {mock ? " · демо-данные (нет DATABASE_URL)" : ""}
+            {lastSync
+              ? " · синхр. " +
+                lastSync.toLocaleString("ru-RU", {
+                  day: "2-digit",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : ""}
           </p>
         </div>
-        <Link
-          href="/subscriptions/new"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          Добавить подписку
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <RefreshUsageButton />
+          <Link
+            href="/settings"
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            Настройки
+          </Link>
+          <Link
+            href="/subscriptions/new"
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            Добавить подписку
+          </Link>
+        </div>
       </div>
 
       {error ? (
         <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
-          {error}. Показаны заглушки.
+          {error}. Показаны подсказки вместо данных.
         </p>
       ) : null}
 

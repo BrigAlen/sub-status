@@ -1,13 +1,13 @@
 /**
- * Provider stubs for Cursor / Claude usage limits.
+ * Fallback notes when live usage is unavailable.
  * These are SUBSCRIPTIONS (usage windows), not API keys for LLM calls.
  */
 
 export type ProviderUsageStub = {
   provider: "cursor" | "claude";
   label: string;
-  usedPercent: number;
-  remainingText: string;
+  usedPercent: number | null;
+  remainingText: string | null;
   resetsAt: string | null;
   note: string;
 };
@@ -16,20 +16,20 @@ export function stubCursorUsage(): ProviderUsageStub {
   return {
     provider: "cursor",
     label: "cursor pool",
-    usedPercent: 68,
-    remainingText: "~32% пула",
-    resetsAt: new Date(Date.now() + 2 * 86400000).toISOString(),
-    note: "Заглушка: живой Cursor usage появится после OAuth/cookie-интеграции",
+    usedPercent: null,
+    remainingText: null,
+    resetsAt: null,
+    note: "Нет данных. Сохраните cookie WorkosCursorSessionToken в Настройках и нажмите «Обновить лимиты». Cookie со временем истекает.",
   };
 }
 
 export function stubClaudeUsage(): ProviderUsageStub {
   return {
     provider: "claude",
-    label: "5h window",
-    usedPercent: 42,
-    remainingText: "осталось ~3ч",
-    resetsAt: new Date(Date.now() + 5 * 3600000).toISOString(),
-    note: "Заглушка: живой Claude usage появится после интеграции подписки",
+    label: "5ч окно",
+    usedPercent: null,
+    remainingText: null,
+    resetsAt: null,
+    note: "Нет данных. Сохраните Claude OAuth (accessToken + refreshToken) в Настройках и нажмите «Обновить лимиты».",
   };
 }

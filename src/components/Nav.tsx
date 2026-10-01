@@ -20,7 +20,7 @@ export function Nav() {
       href={href}
       className={
         "rounded-lg px-3 py-1.5 text-sm font-medium transition " +
-        (pathname === href
+        (pathname === href || (href !== "/" && pathname.startsWith(href))
           ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
           : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800")
       }
@@ -34,9 +34,10 @@ export function Nav() {
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="text-lg font-semibold tracking-tight">Статус подписок</span>
-          <nav className="ml-4 flex gap-1">
+          <nav className="ml-4 flex flex-wrap gap-1">
             {link("/", "Обзор")}
             {link("/subscriptions", "Подписки")}
+            {link("/settings", "Настройки")}
           </nav>
         </div>
         <button

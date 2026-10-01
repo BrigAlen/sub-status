@@ -65,6 +65,24 @@ export async function deleteSubscription(id: string): Promise<boolean> {
   return rows.length > 0;
 }
 
+function pickBestSnap(
+  snaps: UsageSnapshot[],
+  subscriptionId: string,
+  provider: string
+): UsageSnapshot | null {
+  const mine = snaps.filter((s) => s.subscriptionId === subscriptionId);
+  if (mine.length === 0) return null;
+  if (provider === "claude") {
+    const five = mine.find(
+      (s) =>
+        /5\s*h|5ч|five_hour|five-hour/i.test(s.label) ||
+        s.label === "5ч окно"
+    );
+    if (five) return five;
+  }
+  return mine[0] ?? null;
+}
+
 export async function latestUsageForProviders(
   providers: string[]
 ): Promise<{ sub: Subscription; snap: UsageSnapshot | null }[]> {
@@ -89,7 +107,7 @@ export async function latestUsageForProviders(
 
   return relevant.map((sub) => ({
     sub,
-    snap: snaps.find((s) => s.subscriptionId === sub.id) ?? null,
+    snap: pickBestSnap(snaps, sub.id, sub.provider),
   }));
 }
 

@@ -26,6 +26,7 @@ export default async function EditSubscriptionPage({ params }: Props) {
           nextBillingAt: sub.nextBillingAt,
           notes: sub.notes,
           isActive: sub.isActive,
+          calendarRemind: sub.calendarRemind,
         }}
       />
     </div>

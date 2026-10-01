@@ -22,6 +22,7 @@ export function providerLabel(p: string): string {
     google: "Google",
     yandex: "\u042f\u043d\u0434\u0435\u043a\u0441",
     boosty: "Boosty",
+    apple: "Apple",
     other: "\u0414\u0440\u0443\u0433\u043e\u0435",
   };
   return map[p] ?? p;

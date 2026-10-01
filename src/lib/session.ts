@@ -7,6 +7,7 @@ export const SESSION_COOKIE = "sub_status_session";
 export type SessionData = {
   authenticated: boolean;
   loginAt?: string;
+  gcalOAuthState?: string;
 };
 
 function isOpenDev(): boolean {
@@ -66,6 +67,6 @@ export function verifyAppPassword(input: string): boolean {
 export class AuthError extends Error {
   status = 401;
   constructor() {
-    super("\u0422\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f \u0430\u0432\u0442\u043e\u0440\u0438\u0437\u0430\u0446\u0438\u044f");
+    super("Требуется авторизация");
   }
 }

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS "subscriptions" (
   "next_billing_at" date,
   "notes" text,
   "is_active" boolean DEFAULT true NOT NULL,
+  "calendar_remind" boolean DEFAULT true NOT NULL,
   "created_at" timestamp with time zone DEFAULT now() NOT NULL,
   "updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -57,4 +58,10 @@ CREATE TABLE IF NOT EXISTS "audit_logs" (
   "user_agent" text,
   "meta" jsonb,
   "created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "app_settings" (
+  "key" text PRIMARY KEY NOT NULL,
+  "value" jsonb NOT NULL,
+  "updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );

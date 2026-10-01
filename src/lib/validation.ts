@@ -6,6 +6,7 @@ export const providerEnum = z.enum([
   "google",
   "yandex",
   "boosty",
+  "apple",
   "other",
 ]);
 
@@ -26,6 +27,7 @@ export const subscriptionCreateSchema = z.object({
     .optional(),
   notes: z.string().max(2000).nullable().optional(),
   isActive: z.boolean().optional().default(true),
+  calendarRemind: z.boolean().optional().default(true),
 });
 
 export const subscriptionUpdateSchema = subscriptionCreateSchema.partial();
@@ -43,8 +45,8 @@ export const pushSubscribeSchema = z.object({
 });
 
 export const providerCredentialSchema = z.object({
-  subscriptionId: z.string().uuid(),
-  provider: providerEnum,
+  subscriptionId: z.string().uuid().optional(),
+  provider: z.enum(["cursor", "claude"]),
   label: z.string().trim().min(1).max(80).default("default"),
   secret: z.string().min(1).max(8000),
 });
