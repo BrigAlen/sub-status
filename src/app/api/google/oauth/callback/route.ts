@@ -5,30 +5,47 @@ import { exchangeGoogleCode, resolveOAuthAppBase, saveGoogleTokens, setGcalSetti
 import { writeAudit } from "@/lib/audit";
 import { clientIp } from "@/lib/rate-limit";
 
+function isLocalhostBase(base: string): boolean {
+  try {
+    const host = new URL(base).hostname;
+    return host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0";
+  } catch {
+    return /localhost|127\.0\.0\.1/i.test(base);
+  }
+}
+
 export async function GET(req: Request) {
   try {
     await requireAuth();
     const url = new URL(req.url);
     const err = url.searchParams.get("error");
+
+    const session = await getSession();
+    // Prefer session base from OAuth start; never keep Render-internal localhost.
+    let publicBase = session.gcalOAuthRedirectBase || resolveOAuthAppBase(req);
+    if (isLocalhostBase(publicBase)) {
+      publicBase = resolveOAuthAppBase(req);
+    }
+
     if (err) {
+      delete session.gcalOAuthState;
+      delete session.gcalOAuthRedirectBase;
+      await session.save();
       return NextResponse.redirect(
-        new URL("/settings?gcal=error&reason=" + encodeURIComponent(err), url.origin)
+        new URL("/settings?gcal=error&reason=" + encodeURIComponent(err), publicBase)
       );
     }
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
     if (!code || !state) return jsonError("Нет code/state", 400);
 
-    const session = await getSession();
     const expected = session.gcalOAuthState;
     if (!expected || expected !== state) return jsonError("Неверный OAuth state", 400);
-    const redirectBase =
-      session.gcalOAuthRedirectBase || resolveOAuthAppBase(req);
     delete session.gcalOAuthState;
     delete session.gcalOAuthRedirectBase;
     await session.save();
 
-    const tokens = await exchangeGoogleCode(code, redirectBase);
+    const tokens = await exchangeGoogleCode(code, publicBase);
     await saveGoogleTokens(tokens);
     await setGcalSettings({ enabled: true });
 
@@ -38,7 +55,7 @@ export async function GET(req: Request) {
       userAgent: req.headers.get("user-agent"),
     });
 
-    return NextResponse.redirect(new URL("/settings?gcal=connected", url.origin));
+    return NextResponse.redirect(new URL("/settings?gcal=connected", publicBase));
   } catch (e) {
     return handleApiError(e);
   }

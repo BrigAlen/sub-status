@@ -90,27 +90,68 @@ export function normalizeOAuthBaseUrl(base: string): string {
   return base.replace(/\/$/, "");
 }
 
+function isLocalhostHost(hostOrUrl: string): boolean {
+  try {
+    const host = hostOrUrl.includes("://")
+      ? new URL(hostOrUrl).hostname
+      : hostOrUrl.split(":")[0];
+    return host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0";
+  } catch {
+    return /localhost|127\.0\.0\.1/i.test(hostOrUrl);
+  }
+}
+
 /**
  * Resolve OAuth redirect base at runtime (not build-time NEXT_PUBLIC alone).
- * Prefer APP_URL (server-only), then NEXT_PUBLIC_APP_URL, then request origin.
+ * Prefer APP_URL (server-only), then NEXT_PUBLIC_APP_URL, then x-forwarded-*,
+ * then req.url origin. Never prefer localhost when a public APP_URL is set
+ * (Render binds PORT to localhost internally).
  * Render: set APP_URL=https://sub-status.onrender.com (same as public URL).
  */
 export function resolveOAuthAppBase(req?: Request): string {
   const fromEnv = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "").trim();
-  if (fromEnv) return normalizeOAuthBaseUrl(fromEnv);
+  // Public env always wins — never fall through to localhost req.origin.
+  if (fromEnv && !isLocalhostHost(fromEnv)) {
+    return normalizeOAuthBaseUrl(fromEnv);
+  }
+
+  let fromForwarded: string | null = null;
+  let fromReqOrigin: string | null = null;
+
   if (req) {
     const proto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
     const host =
       req.headers.get("x-forwarded-host")?.split(",")[0]?.trim() ||
       req.headers.get("host");
-    if (proto && host) return normalizeOAuthBaseUrl(proto + "://" + host);
+    if (proto && host) {
+      const candidate = normalizeOAuthBaseUrl(proto + "://" + host);
+      if (!isLocalhostHost(host)) return candidate;
+      fromForwarded = candidate;
+    }
     try {
-      return normalizeOAuthBaseUrl(new URL(req.url).origin);
+      const origin = normalizeOAuthBaseUrl(new URL(req.url).origin);
+      if (!isLocalhostHost(origin)) return origin;
+      fromReqOrigin = origin;
     } catch {
       /* ignore */
     }
   }
-  return "http://localhost:3000";
+
+  // Hardening: resolved base was localhost but env has a public URL — use env.
+  if (fromEnv && !isLocalhostHost(fromEnv)) {
+    return normalizeOAuthBaseUrl(fromEnv);
+  }
+  if (fromEnv) return normalizeOAuthBaseUrl(fromEnv);
+
+  // If only localhost available, use NEXT_PUBLIC_APP_URL when it points at onrender
+  // (do not hardcode the hostname unless it already appears in env).
+  const nextPublic = (process.env.NEXT_PUBLIC_APP_URL || "").trim();
+  if (nextPublic && /onrender\.com/i.test(nextPublic) && !isLocalhostHost(nextPublic)) {
+    return normalizeOAuthBaseUrl(nextPublic);
+  }
+
+  // Last resort for local dev only.
+  return fromForwarded || fromReqOrigin || "http://localhost:3000";
 }
 
 function oauthRedirectUri(baseUrl: string): string {
