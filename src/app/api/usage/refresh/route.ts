@@ -9,6 +9,8 @@ import { providerCredentials, usageSnapshots } from "@/db/schema";
 import { writeAudit } from "@/lib/audit";
 import { handleApiError, jsonError } from "@/lib/api";
 import { ensureProviderSubscription } from "@/lib/ensure-subscriptions";
+import { billingPatchFromRefresh } from "@/lib/provider-billing";
+import type { ProviderBilling } from "@/providers/types";
 import { applyProviderBilling, listLatestUsage } from "@/lib/subscriptions";
 import {
   fetchClaudeUsage,
@@ -39,28 +41,18 @@ async function loadCredential(provider: "cursor" | "claude") {
 
 
 async function mergeBilling(
-  sub: { id: string; notes: string | null; amountCents: number | null },
-  billing: {
-    name?: string;
-    amountCents?: number | null;
-    currency?: string;
-    nextBillingAt?: string | null;
-    billingPeriod?: string;
-  } | undefined,
+  sub: { id: string; notes: string | null },
+  billing: ProviderBilling | undefined,
   opts: { clearSeedNextBilling?: boolean } = {}
 ) {
   if (!billing) return;
-  const auto = (sub.notes || "").includes("Автосоздано");
-  const patch: typeof billing = { ...billing };
-  // Clear invented seed $20 when API has no price
-  if (!("amountCents" in patch) || patch.amountCents == null) {
-    if (auto || sub.amountCents === 2000) patch.amountCents = null;
-    else delete (patch as { amountCents?: number | null }).amountCents;
-  }
-  if (opts.clearSeedNextBilling && !("nextBillingAt" in patch)) {
-    if (auto) patch.nextBillingAt = null;
-  }
-  await applyProviderBilling(sub.id, patch);
+  await applyProviderBilling(
+    sub.id,
+    billingPatchFromRefresh(billing, {
+      clearSeedNextBilling: opts.clearSeedNextBilling,
+      notes: sub.notes,
+    })
+  );
 }
 
 async function insertWindows(
